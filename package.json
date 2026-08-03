@@ -1,0 +1,30 @@
+{
+  "name": "cozy-desk",
+  "version": "0.1.0",
+  "description": "App desktop Windows: dati da Arduino via WiFi, controllo monitor, Spotify web player, cozy view video/wallpaper, telecomando remoto",
+  "main": "main.js",
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "electron-store": "^8.2.0",
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5",
+    "node-fetch": "^2.7.0"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "scripts": {
+    "start": "electron .",
+    "build:win-arm64": "electron-builder --win --arm64"
+  },
+  "build": {
+    "appId": "com.tuonome.cozydesk",
+    "productName": "Cozy Desk",
+    "win": {
+      "target": ["nsis"],
+      "arch": ["arm64"]
+    }
+  }
+}

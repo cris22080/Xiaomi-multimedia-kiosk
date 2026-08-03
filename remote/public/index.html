@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cozy Desk — Telecomando</title>
+<style>
+  body { font-family: system-ui, sans-serif; background:#111318; color:#eee; margin:0; padding:0; }
+  .container { max-width:600px; margin:0 auto; padding:24px 16px; }
+  h1 { font-size:20px; margin:0 0 20px; text-align:center; }
+  h2 { font-size:14px; margin:20px 0 10px; text-transform:uppercase; opacity:.6; }
+  .btn { display:block; width:100%; padding:14px; margin:8px 0; border:none; border-radius:10px;
+         font-size:15px; background:#2a2f3a; color:#fff; cursor:pointer; transition:all .2s; }
+  .btn:hover { background:#363b48; }
+  .btn.active { background:#4f7cff; }
+  .btn.danger { background:#7a1f1f; margin-top:24px; }
+  .btn.danger:hover { background:#8a2f2f; }
+  .status { margin-top:16px; font-size:13px; opacity:.7; padding:12px; border-radius:8px; background:#1a1f2a; }
+  .status.offline { background: rgba(161,58,58,0.35); color:#ff9999; }
+  
+  .section { margin-top:24px; padding:16px; background:#1a1f2a; border-radius:10px; }
+  
+  .category { margin-top:16px; }
+  .category-title { font-size:16px; font-weight:600; margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+  .category-title-icon { font-size:18px; }
+  
+  .channel-btn { display:block; width:100%; text-align:left; padding:12px; margin:6px 0; 
+                 background:#2a2f3a; border:none; border-radius:8px; cursor:pointer; color:#fff;
+                 font-size:14px; transition:all .15s; border-left:3px solid transparent; }
+  .channel-btn:hover { background:#363b48; border-left-color:#4f7cff; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎮 Cozy Desk</h1>
+    
+    <div class="section">
+      <h2>Schermata</h2>
+      <button class="btn" id="cozyOn">Attiva Cozy View</button>
+      <button class="btn" id="cozyOff">Disattiva Cozy View</button>
+    </div>
+
+    <div class="section">
+      <h2>Schermo</h2>
+      <button class="btn" id="screenOn">Accendi schermo</button>
+      <button class="btn" id="screenOff">Spegni schermo</button>
+    </div>
+
+    <div class="section">
+      <h2>📺 IPTV</h2>
+      <div id="iptvCategories"></div>
+    </div>
+
+    <div class="section">
+      <h2>🎵 Spotify</h2>
+      <button class="btn" id="spotifyToggle">Carica playlist</button>
+      <div id="spotifyPlaylists" style="margin-top:10px;display:none;"></div>
+    </div>
+
+    <button class="btn danger" id="shutdownApp">⛔ Chiudi applicazione</button>
+
+    <div class="status" id="status">connessione...</div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const statusEl = document.getElementById("status");
+    const iptvCategoriesEl = document.getElementById("iptvCategories");
+
+    socket.on("connect", () => {
+      statusEl.textContent = "✅ connesso";
+      statusEl.classList.remove("offline");
+    });
+    
+    socket.on("disconnect", () => {
+      statusEl.textContent = "❌ offline";
+      statusEl.classList.add("offline");
+    });
+    
+    socket.on("state", (s) => {
+      if (s.online) {
+        statusEl.textContent = "✅ online";
+        statusEl.classList.remove("offline");
+      } else {
+        statusEl.textContent = "❌ offline";
+        statusEl.classList.add("offline");
+      }
+    });
+
+    // Load IPTV categories
+    fetch("/iptv/config").then(r => r.json()).then(config => {
+      if (config && config.categories) {
+        iptvCategoriesEl.innerHTML = config.categories.map(cat => `
+          <div class="category">
+            <div class="category-title">
+              <span class="category-title-icon">${cat.icon || "📺"}</span>
+              <span>${cat.name}</span>
+            </div>
+            ${(cat.channels || []).map(ch => `
+              <button class="channel-btn" onclick="playChannel('${ch.url}', '${cat.name} - ${ch.name}')">${ch.name}</button>
+            `).join("")}
+          </div>
+        `).join("");
+      }
+    }).catch(err => console.error("Errore caricamento IPTV:", err));
+
+    window.playChannel = (url, name) => {
+      socket.emit("playIPTV", { url, name });
+    };
+
+    document.getElementById("cozyOn").onclick = () => socket.emit("toggleCozy", true);
+    document.getElementById("cozyOff").onclick = () => socket.emit("toggleCozy", false);
+    document.getElementById("screenOn").onclick = () => socket.emit("screenPower", true);
+    document.getElementById("screenOff").onclick = () => socket.emit("screenPower", false);
+
+    const spotifyToggle = document.getElementById("spotifyToggle");
+    const spotifyPlaylists = document.getElementById("spotifyPlaylists");
+    let playlistsVisible = false;
+
+    spotifyToggle.onclick = async () => {
+      if (playlistsVisible) {
+        spotifyPlaylists.innerHTML = "";
+        spotifyPlaylists.style.display = "none";
+        spotifyToggle.textContent = "Carica playlist";
+        playlistsVisible = false;
+        return;
+      }
+      
+      spotifyToggle.textContent = "Caricamento...";
+      try {
+        const playlists = await fetch("/spotify/playlists").then(r => r.json());
+        spotifyPlaylists.innerHTML = playlists.map(p => 
+          `<div class="channel-btn" onclick="socket.emit('spotifyPlaylist', '${p.id}')">${p.name}</div>`
+        ).join("");
+        spotifyPlaylists.style.display = "block";
+        spotifyToggle.textContent = "Nascondi playlist";
+        playlistsVisible = true;
+      } catch (err) {
+        spotifyToggle.textContent = "Errore caricamento";
+        setTimeout(() => spotifyToggle.textContent = "Carica playlist", 2000);
+      }
+    };
+
+    document.getElementById("shutdownApp").onclick = () => {
+      if (confirm("Chiudere l'app? Non potrai riaprirla da qui.")) {
+        socket.emit("shutdownApp");
+      }
+    };
+  </script>
+</body>
+</html>
