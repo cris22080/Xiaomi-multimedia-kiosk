@@ -43,6 +43,17 @@ function start(port, handlers, config) {
     res.json(iptvConfigRef || {});
   });
 
+  // Serve an imported channels playlist if present at repo root
+  app.get("/channels.m3u8", (req, res) => {
+    const channelsPath = path.join(__dirname, "..", "channels.m3u8");
+    const fs = require("fs");
+    if (fs.existsSync(channelsPath)) {
+      res.sendFile(channelsPath);
+    } else {
+      res.status(404).send("Not found");
+    }
+  });
+
   const server = http.createServer(app);
   io = new Server(server);
 

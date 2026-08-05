@@ -85,11 +85,25 @@ Cozy View si mette in pausa quando non è la schermata attiva, per non
 consumare risorse inutilmente. Il polling di Spotify parte solo quando sei
 sulla schermata Spotify, per lo stesso motivo.
 
-## Nota su Windows ARM64
+## Building and packaging for Windows ARM64
 
-Nessun modulo nativo C++ nel progetto: funziona così com'è, basta installare
-Node.js ARM64 (non x64) — vedi requisiti sopra. Per un installer `.exe`
-nativo: `npm run build:win-arm64` (file in `dist/`).
+Development and running:
+- Use Node.js 18+ ARM64 on the target device to run the app during development.
+  cd cozy-desk && npm install && npm start
+
+Packaging (NSIS installer for ARM64):
+- On an ARM64 Windows machine: run:
+  npm install
+  npm run package:win-arm64
+  The produced installer will be placed in the `dist/` folder.
+
+Notes on cross-building:
+- electron-builder will download the ARM64 Electron runtime automatically when building for --arm64.
+- Cross-building from a different host architecture (x64 or Linux) often requires Wine and extra tooling and is error-prone. Recommended approaches:
+  1) Build on an ARM64 Windows machine (fastest), or
+  2) Add a CI runner with Windows ARM64 (GitHub Actions or self-hosted) to produce artifacts.
+
+If you want, a GitHub Actions workflow to build ARM64 installers can be added to this repo.
 
 ## Modalità "cassa automatica" (kiosk) — limiti reali
 

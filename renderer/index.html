@@ -354,10 +354,56 @@
     function playIPTVChannel(url, name) {
       // Ensure we're in the IPTV view and fullscreen overlay
       goTo('iptv');
-      iptvVideo.src = url;
       iptvSelector.style.display = "none";
       iptvPlayerContainer.style.display = "flex";
-      try { iptvVideo.play(); } catch (e) {}
+
+      // Destroy any existing hls instance
+      if (window._currentHls) {
+        try { window._currentHls.destroy(); } catch(e) {}
+        window._currentHls = null;
+      }
+      // Reset src
+      iptvVideo.src = '';
+
+      // If the environment supports HLS natively (Safari), use direct src
+      if (iptvVideo.canPlayType && iptvVideo.canPlayType('application/vnd.apple.mpegurl')) {
+        iptvVideo.src = url;
+        try { iptvVideo.play(); } catch (e) {}
+      } else {
+        // Dynamically load hls.js if needed and attach to video element
+        const loadHls = () => new Promise((resolve, reject) => {
+          if (window.Hls) return resolve(window.Hls);
+          const s = document.createElement('script');
+          s.src = 'https://cdn.jsdelivr.net/npm/hls.js@1.4.2/dist/hls.min.js';
+          s.onload = () => resolve(window.Hls);
+          s.onerror = () => reject(new Error('Failed to load hls.js'));
+          document.head.appendChild(s);
+        });
+
+        loadHls().then((Hls) => {
+          if (Hls && Hls.isSupported()) {
+            const hls = new Hls();
+            window._currentHls = hls;
+            hls.loadSource(url);
+            hls.attachMedia(iptvVideo);
+            hls.on(Hls.Events.MANIFEST_PARSED, function() {
+              try { iptvVideo.play(); } catch(e) {}
+            });
+            hls.on(Hls.Events.ERROR, function(event, data) {
+              console.error('hls error', event, data);
+            });
+          } else {
+            // fallback to setting src directly
+            iptvVideo.src = url;
+            try { iptvVideo.play(); } catch (e) {}
+          }
+        }).catch((err) => {
+          console.error('Failed to load hls.js', err);
+          iptvVideo.src = url;
+          try { iptvVideo.play(); } catch (e) {}
+        });
+      }
+
       console.log(`[IPTV] Riproduci: ${name || url}`);
     }
 
@@ -474,8 +520,9 @@
         const btn = document.querySelector(`.nav-btn[data-view="${v}"]`);
         if (btn) btn.classList.toggle("active", v === 'home');
       });
-      // pause any videos
-      const iptvVideo = document.getElementById('iptvVideo'); if (iptvVideo) { iptvVideo.pause(); iptvVideo.src = ''; }
+      // pause any videos and destroy hls instance
+      const iptvVideo = document.getElementById('iptvVideo'); if (iptvVideo) { try { iptvVideo.pause(); } catch(e){}; iptvVideo.src = ''; }
+      if (window._currentHls) { try { window._currentHls.destroy(); } catch(e){}; window._currentHls = null; }
       const cozyVideo = document.getElementById('cozyVideo'); if (cozyVideo) cozyVideo.pause();
     }
 

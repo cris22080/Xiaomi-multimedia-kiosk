@@ -17,14 +17,20 @@
   },
   "scripts": {
     "start": "electron .",
-    "build:win-arm64": "electron-builder --win --arm64"
+    "build:win-arm64": "electron-builder --win --arm64",
+    "package:win-arm64": "electron-builder --win nsis --arm64"
   },
   "build": {
     "appId": "com.tuonome.cozydesk",
     "productName": "Cozy Desk",
+    "files": ["**/*"],
     "win": {
-      "target": ["nsis"],
-      "arch": ["arm64"]
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["arm64"]
+        }
+      ]
     }
   }
 }

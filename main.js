@@ -20,18 +20,20 @@ let spotifyPollTimer = null;
 Menu.setApplicationMenu(null);
 
 function createMainWindow() {
-  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+  // Use the full display bounds (includes taskbar area) so the window can cover the Windows taskbar.
+  const { width, height, x, y } = screen.getPrimaryDisplay().bounds;
 
   mainWindow = new BrowserWindow({
-    width,
-    height,
-    x: 0,
-    y: 0,
+    x: x || 0,
+    y: y || 0,
+    width: width,
+    height: height,
     alwaysOnTop: true,
     frame: false,
     closable: false,
     minimizable: false,
-    fullscreenable: false,
+    // Allow fullscreening so the window can truly occupy the entire screen
+    fullscreenable: true,
     fullscreen: true,
     kiosk: true,
     backgroundColor: "#111318",
@@ -42,6 +44,7 @@ function createMainWindow() {
     }
   });
 
+  // Ensure window stays on top and is visible on all workspaces
   mainWindow.setAlwaysOnTop(true, "screen-saver");
   mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
 
