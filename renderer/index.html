@@ -137,8 +137,8 @@
   .track-row .dur { color:var(--muted); }
 
   #progressBar { flex:0 0 clamp(64px,9vh,90px); display:flex; align-items:center; gap: 1.4vw;
-                 padding: 0 3vw; border-top:1px solid var(--panel-border); background: var(--panel);
-                 backdrop-filter: blur(20px); }
+                  padding: 0 3vw; border-top:1px solid var(--panel-border); background: var(--panel);
+                  backdrop-filter: blur(20px); }
   #playIcon { width: clamp(34px,4vw,48px); height: clamp(34px,4vw,48px); border-radius:50%;
               background: var(--accent-grad); display:flex; align-items:center; justify-content:center;
               font-size: clamp(13px,1.4vw,18px); flex-shrink:0;
@@ -148,6 +148,49 @@
   #progressFill { height:100%; background:#1DB954; border-radius:999px; width:0%; transition: width .4s linear; }
   #timeCur, #timeDur { font-size: clamp(10px,1vw,12px); color:var(--muted); width:3.2em; }
   #timeDur { text-align:right; }
+
+  .empty-state { text-align:center; opacity:.5; padding:20px; font-size:12px; }
+
+  /* Shared visual language with the mobile remote: warm editorial surfaces
+     and tactile controls, adapted to the desktop layout. */
+  :root { --bg-a:#f4efe6; --bg-b:#e6f2e8; --panel:#fffaf1; --panel-border:#1b2c25; --accent:#ee6434; --accent-2:#ffc72c; --accent-grad:linear-gradient(135deg,#ee6434,#f58c48); --accent-soft:rgba(238,100,52,.18); --green:#2e9c73; --text:#17251f; --muted:#65736b; --card-radius:10px; }
+  html,body { background:radial-gradient(circle at 90% 14%,rgba(255,199,44,.7) 0,transparent 22%),radial-gradient(circle at 15% 88%,rgba(103,189,151,.28) 0,transparent 31%),var(--bg-a); color:var(--text); font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; }
+  #sidebar { width:clamp(76px,7vw,108px); background:#fffaf1; border-right:2px solid var(--panel-border); backdrop-filter:none; padding:2vh 0; gap:1.7vh; }
+  #sidebar::before { content:"C"; display:grid; place-items:center; width:42px; height:42px; margin:0 0 2vh; border:2px solid var(--text); border-radius:50%; background:var(--accent-2); color:var(--text); font:800 26px/1 Georgia,serif; }
+  .nav-btn { width:clamp(46px,4.8vw,62px); height:clamp(46px,4.8vw,62px); border:2px solid transparent; border-radius:8px; color:var(--text); font-size:clamp(18px,2vw,25px); }
+  .nav-btn.active { background:var(--accent-2); color:var(--text); border-color:var(--text); box-shadow:4px 4px 0 var(--text); transform:none; }
+  #content::before { content:"COZY DESK / CONTROL ROOM"; position:absolute; left:3vw; top:2.2vh; z-index:4; color:var(--muted); font:800 clamp(9px,.85vw,12px)/1 ui-monospace,SFMono-Regular,Consolas,monospace; letter-spacing:1.5px; }
+  #netPill { top:2vh; right:2.5vw; padding:.75vh 1vw; border:2px solid var(--text); border-radius:4px; background:var(--text); color:#fffaf1; backdrop-filter:none; font:800 clamp(9px,.8vw,11px)/1 ui-monospace,SFMono-Regular,Consolas,monospace; letter-spacing:.5px; }
+  #netPill.offline { background:#a3372c; color:#fff; }
+  #homeLeft { flex:0 0 70%; align-items:flex-start; padding-left:clamp(28px,5vw,78px); }
+  #clock { font-family:Georgia,"Times New Roman",serif; font-size:clamp(96px,15.5vw,238px); font-weight:800; letter-spacing:-.085em; color:var(--text); }
+  #dateLine { color:var(--muted); font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:clamp(12px,1.3vw,17px); font-weight:800; letter-spacing:1px; }
+  #homeRight { flex:0 0 30%; gap:1.4vh; padding-right:clamp(24px,3vw,48px); }
+  .statRow { gap:1.2vw; }
+  .stat-card,.status-pill { background:var(--panel); border:2px solid var(--panel-border); border-radius:9px; backdrop-filter:none; box-shadow:5px 5px 0 rgba(23,37,31,.9); }
+  .stat-card { padding:2.3vh 1.6vw; }
+  .stat-card .label { color:var(--muted); font:800 clamp(9px,.8vw,11px)/1 ui-monospace,SFMono-Regular,Consolas,monospace; letter-spacing:1.2px; }
+  .stat-card .value { color:var(--accent); font-family:Georgia,"Times New Roman",serif; font-size:clamp(34px,4.6vw,64px); font-weight:900; letter-spacing:-.06em; line-height:.95; }
+  .statusGrid { gap:1.2vh 1vw; }
+  .status-pill { border-radius:7px; padding:1.5vh 1.3vw; box-shadow:3px 3px 0 rgba(23,37,31,.85); }
+  .status-pill.clickable:active { transform:translate(3px,3px); box-shadow:none; }
+  .status-dot { border:2px solid var(--text); border-radius:3px; background:#d0d3c9; }
+  .status-pill.on .status-dot { background:var(--green); box-shadow:none; }
+  .status-pill .name { font-family:Georgia,"Times New Roman",serif; font-size:clamp(13px,1.25vw,16px); font-weight:800; }
+  .status-pill .state,.status-pill.on .state { color:var(--muted); font:800 clamp(9px,.8vw,11px)/1.2 ui-monospace,SFMono-Regular,Consolas,monospace; }
+  #spotifyTop { padding:6vh 3vw 3vh; }
+  #spotifyLoginBox button { border:2px solid var(--text); border-radius:7px; background:var(--accent-2); color:var(--text); box-shadow:4px 4px 0 var(--text); }
+  #npArt { border:2px solid var(--text); border-radius:9px; box-shadow:7px 7px 0 var(--text); }
+  #npTitle { font-family:Georgia,"Times New Roman",serif; }
+  #listBox { background:var(--panel); border:2px solid var(--text); border-radius:9px; backdrop-filter:none; box-shadow:5px 5px 0 var(--text); }
+  #backToPlaylists { color:var(--accent); font-weight:800; }
+  .playlist-row,.track-row { background:#f2eadc; border:1px solid rgba(23,37,31,.18); border-radius:6px; }
+  .playlist-row:hover { background:#ffe8c9; }
+  #progressBar { border-top:2px solid var(--text); background:#fffaf1; backdrop-filter:none; }
+  #playIcon { border:2px solid var(--text); border-radius:6px; background:var(--accent-2); color:var(--text); box-shadow:3px 3px 0 var(--text); }
+  #progressTrack { background:#ded5c6; border-radius:0; }
+  #progressFill { background:var(--accent); border-radius:0; }
+  #timeCur,#timeDur { color:var(--muted); font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-weight:800; }
 </style>
 </head>
 <body>
@@ -205,7 +248,7 @@
       <!-- COZY -->
       <div id="view-cozy" class="view">
         <video id="cozyVideo" autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;background:#000;display:none;">
-          <source src="../cozy-media/esempio.mp4" type="video/mp4">
+          <source src="../cozy-media/cozy.mp4" type="video/mp4">
         </video>
         <div id="cozyNoVideo" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, #1a1a3e 0%, #0f0f1e 100%);color:var(--muted);font-size:14px;text-align:center;padding:2vw;">
           <button id="cozyCloseBtn" style="position:absolute;top:2vh;right:2vw;padding:8px 10px;border-radius:8px;border:none;background:rgba(0,0,0,0.6);color:#fff;cursor:pointer;z-index:20;font-size:14px;">✕</button>
@@ -234,9 +277,19 @@
           </div>
         </div>
         <div id="iptvPlayerContainer" style="flex:1;width:100%;height:100%;display:none;position:relative;">
-          <video id="iptvVideo" autoplay muted controls style="width:100%;height:100%;object-fit:contain;background:#000;">
+          <video id="iptvVideo" autoplay playsinline controls style="width:100%;height:100%;object-fit:contain;background:#000;">
           </video>
           <button id="iptvCloseBtn" style="position:absolute;top:2vh;right:2vw;padding:0.8vh 1.4vw;border-radius:8px;border:none;background:rgba(0,0,0,0.7);color:#fff;cursor:pointer;font-size:14px;z-index:10;">← Indietro</button>
+          <button id="iptvUnmuteBtn" style="position:absolute;bottom:2vh;right:2vw;padding:0.8vh 1.4vw;border-radius:8px;border:none;background:rgba(0,0,0,0.7);color:#fff;cursor:pointer;font-size:14px;z-index:10;">🔊 Attiva audio</button>
+        </div>
+      </div>
+
+      <!-- SVEGLIA: schermata bloccante, solo spegnimento -->
+      <div id="view-alarm" class="view" style="align-items:center;justify-content:center;background:#17251f;color:#fffaf1;z-index:10000;">
+        <div style="text-align:center;">
+          <div id="alarmTime" style="font-family:Georgia,'Times New Roman',serif;font-size:clamp(90px,18vw,270px);font-weight:800;letter-spacing:-.08em;line-height:1;">--:--</div>
+          <div id="alarmMotif" style="margin:2vh 0 5vh;font:800 clamp(11px,1.1vw,14px)/1 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:2px;color:#ffc72c;text-transform:uppercase;">Sveglia</div>
+          <button id="alarmStopBtn" style="min-width:clamp(220px,24vw,330px);padding:2vh 3vw;border:3px solid #fffaf1;border-radius:8px;background:#ee6434;color:#fffaf1;font:800 clamp(16px,1.5vw,22px)/1 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:1px;box-shadow:7px 7px 0 #ffc72c;cursor:pointer;">SPEGNI</button>
         </div>
       </div>
 
@@ -275,11 +328,12 @@
 
   <script>
     // ---------- Navigazione tra schermate ----------
-    const views = ["home", "cozy", "iptv", "spotify"];
+    const views = ["home", "cozy", "iptv", "spotify", "alarm"];
     function goTo(view) {
       views.forEach((v) => {
         document.getElementById("view-" + v).classList.toggle("active", v === view);
-        document.querySelector(`.nav-btn[data-view="${v}"]`).classList.toggle("active", v === view);
+        const navButton = document.querySelector(`.nav-btn[data-view="${v}"]`);
+        if (navButton) navButton.classList.toggle("active", v === view);
       });
       if (view === "spotify") {
         window.cozyDesk.enteredSpotifyView();
@@ -288,7 +342,7 @@
         window.cozyDesk.leftSpotifyView();
       }
         // Toggle fullscreen overlay when entering cozy or iptv views
-        const isFull = (view === "cozy" || view === "iptv");
+        const isFull = (view === "cozy" || view === "iptv" || view === "alarm");
         document.body.classList.toggle('fullscreen-view', isFull);
         // Request OS-level fullscreen via main process for real kiosk behavior when entering overlays
         if (isFull && window.cozyDesk && window.cozyDesk.setAppFullscreen) {
@@ -323,9 +377,18 @@
     const iptvPlayBtn = document.getElementById("iptvPlayBtn");
     const iptvBackBtn = document.getElementById("iptvBackBtn");
     const iptvCloseBtn = document.getElementById("iptvCloseBtn");
+    const iptvUnmuteBtn = document.getElementById("iptvUnmuteBtn");
     const iptvVideo = document.getElementById("iptvVideo");
     const iptvSelector = document.getElementById("iptvSelector");
     const iptvPlayerContainer = document.getElementById("iptvPlayerContainer");
+
+    // Streams opened from the remote must not keep the browser's muted-autoplay flag.
+    function enableIPTVAudio() {
+      iptvVideo.defaultMuted = false;
+      iptvVideo.muted = false;
+      iptvVideo.volume = 1;
+    }
+    iptvUnmuteBtn.addEventListener("click", enableIPTVAudio);
 
     // Load IPTV channels from config
     window.cozyDesk.getIPTVConfig().then((config) => {
@@ -354,6 +417,7 @@
     function playIPTVChannel(url, name) {
       // Ensure we're in the IPTV view and fullscreen overlay
       goTo('iptv');
+      enableIPTVAudio();
       iptvSelector.style.display = "none";
       iptvPlayerContainer.style.display = "flex";
 
@@ -622,6 +686,71 @@
         pill.classList.add("offline");
       }
     });
+
+    // ---------- Sveglia ----------
+    const alarmStopBtn = document.getElementById("alarmStopBtn");
+    const alarmTimeEl = document.getElementById("alarmTime");
+    const alarmMotifEl = document.getElementById("alarmMotif");
+    let alarmAudioContext = null;
+    let alarmTimers = [];
+
+    const alarmThemes = {
+      aurora: [523.25, 659.25, 783.99, 1046.5],
+      pulse: [392, 392, 523.25, 659.25],
+      calm: [440, 523.25, 587.33, 659.25]
+    };
+
+    function stopAlarmMusic() {
+      alarmTimers.forEach(clearTimeout);
+      alarmTimers = [];
+    }
+
+    function playAlarmMusic(theme) {
+      stopAlarmMusic();
+      const notes = alarmThemes[theme] || alarmThemes.aurora;
+      try {
+        alarmAudioContext = alarmAudioContext || new AudioContext();
+        alarmAudioContext.resume();
+        const playNote = (frequency, when) => {
+          const osc = alarmAudioContext.createOscillator();
+          const gain = alarmAudioContext.createGain();
+          osc.type = theme === "pulse" ? "square" : "sine";
+          osc.frequency.value = frequency;
+          gain.gain.setValueAtTime(0.0001, when);
+          gain.gain.exponentialRampToValueAtTime(0.23, when + 0.03);
+          gain.gain.exponentialRampToValueAtTime(0.0001, when + 0.56);
+          osc.connect(gain).connect(alarmAudioContext.destination);
+          osc.start(when);
+          osc.stop(when + 0.6);
+        };
+        const loop = () => {
+          const start = alarmAudioContext.currentTime + 0.06;
+          notes.forEach((note, index) => playNote(note, start + index * 0.64));
+          alarmTimers.push(setTimeout(loop, notes.length * 640 + 380));
+        };
+        loop();
+      } catch (error) {
+        console.error("Audio sveglia non disponibile:", error);
+      }
+    }
+
+    function showAlarm(alarm) {
+      alarmTimeEl.textContent = alarm.time || new Date().toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+      alarmMotifEl.textContent = `Sveglia · ${alarm.motif || "aurora"}`;
+      goTo("alarm");
+      window.cozyDesk.setVolume(alarm.volume).catch(() => {});
+      playAlarmMusic(alarm.motif);
+    }
+
+    async function dismissAlarm() {
+      stopAlarmMusic();
+      await window.cozyDesk.stopAlarm();
+      goTo("home");
+    }
+
+    alarmStopBtn.addEventListener("click", dismissAlarm);
+    window.cozyDesk.onAlarmTrigger(showAlarm);
+    window.cozyDesk.onAlarmStop(() => { stopAlarmMusic(); goTo("home"); });
 
     // ---------- Spotify ----------
     async function initSpotifyView() {

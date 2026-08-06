@@ -12,6 +12,8 @@ const screenControl = require("./modules/screenControl");
 const network = require("./modules/network");
 const remoteServer = require("./modules/remoteServer");
 const spotify = require("./modules/spotify");
+const bluetooth = require("./modules/bluetooth");
+const alarmManager = require("./modules/alarmManager");
 
 let mainWindow = null;
 let allowQuit = false; // true solo dopo il comando remoto di chiusura
@@ -40,7 +42,8 @@ function createMainWindow() {
     webPreferences: {
       preload: path.join(__dirname, "renderer", "preload.js"),
       contextIsolation: true,
-      nodeIntegration: false
+      nodeIntegration: false,
+      autoplayPolicy: "no-user-gesture-required"
     }
   });
 
@@ -143,9 +146,115 @@ app.whenReady().then(() => {
     },
     onGetState: () => ({
       online: network.isOnline(),
-      spotifyConnected: spotify.isAuthenticated()
-    })
+      spotifyConnected: spotify.isAuthenticated(),
+      activeAlarm: alarmManager.getActive()
+    }),
+    onGetAlarms: () => ({ alarms: alarmManager.list(), motifs: alarmManager.motifs }),
+    onSaveAlarm: (alarm) => ({ alarms: alarmManager.save(alarm), motifs: alarmManager.motifs }),
+    onDeleteAlarm: (id) => ({ alarms: alarmManager.remove(id), motifs: alarmManager.motifs }),
+    onStopAlarm: () => {
+      alarmManager.stop();
+      mainWindow.webContents.send("alarm:stop");
+      return { success: true };
+    },
+    // Volume handlers for remote
+    onGetVolume: async () => {
+      const { exec } = require('child_process');
+      const util = require('util');
+      const execPromise = util.promisify(exec);
+      
+      const command = `powershell -Command "
+        Add-Type -TypeDefinition @'
+        using System;
+        using System.Runtime.InteropServices;
+        [Guid(\"5CDF2C82-841E-4546-9722-0CF74078229A\"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        interface IAudioEndpointVolume {
+          int GetMasterVolumeLevelScalar(out float pfLevel);
+          int SetMasterVolumeLevelScalar(float fLevel, Guid pguidEventContext);
+        }
+        [Guid(\"D666063F-1587-4E43-81F1-B948E807363F\"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        interface IMMDevice {
+          int Activate(ref Guid iid, int dwClsCtx, int pActivationParams, out IAudioEndpointVolume ppInterface);
+        }
+        [Guid(\"A95664D2-9614-4F35-A746-DE8DB63617E6\"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        interface IMMDeviceEnumerator {
+          int GetDefaultAudioEndpoint(int dataFlow, int role, out IMMDevice ppDevice);
+        }
+        [ComImport, Guid(\"BCDE0395-E52F-467C-8E3D-C4579291692E\")] class MMDeviceEnumerator { }
+        '@
+        \$enumerator = New-Object MMDeviceEnumerator
+        \$device = \$null
+        \$enumerator.GetDefaultAudioEndpoint(0, 1, [ref]\$device)
+        \$endpointVolume = \$null
+        \$guid = [Guid]\"5CDF2C82-841E-4546-9722-0CF74078229A\"
+        \$device.Activate([ref]\$guid, 7, 0, [ref]\$endpointVolume)
+        \$level = 0.0
+        \$endpointVolume.GetMasterVolumeLevelScalar([ref]\$level)
+        [int](\$level * 100)
+      "`;
+      
+      try {
+        const { stdout } = await execPromise(command);
+        const volume = parseInt(stdout.trim());
+        return { success: true, volume: isNaN(volume) ? 100 : volume };
+      } catch (error) {
+        console.error('[Volume] Errore lettura volume:', error.message);
+        return { success: false, error: error.message, volume: 100 };
+      }
+    },
+    onSetVolume: async (level) => {
+      const { exec } = require('child_process');
+      const util = require('util');
+      const execPromise = util.promisify(exec);
+      
+      // Clamp volume between 0 and 100
+      const volume = Math.max(0, Math.min(100, Math.round(level)));
+      
+      const command = `powershell -Command "
+        Add-Type -TypeDefinition @'
+        using System;
+        using System.Runtime.InteropServices;
+        [Guid(\"5CDF2C82-841E-4546-9722-0CF74078229A\"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        interface IAudioEndpointVolume {
+          int GetMasterVolumeLevelScalar(out float pfLevel);
+          int SetMasterVolumeLevelScalar(float fLevel, Guid pguidEventContext);
+        }
+        [Guid(\"D666063F-1587-4E43-81F1-B948E807363F\"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        interface IMMDevice {
+          int Activate(ref Guid iid, int dwClsCtx, int pActivationParams, out IAudioEndpointVolume ppInterface);
+        }
+        [Guid(\"A95664D2-9614-4F35-A746-DE8DB63617E6\"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        interface IMMDeviceEnumerator {
+          int GetDefaultAudioEndpoint(int dataFlow, int role, out IMMDevice ppDevice);
+        }
+        [ComImport, Guid(\"BCDE0395-E52F-467C-8E3D-C4579291692E\")] class MMDeviceEnumerator { }
+        '@
+        \$enumerator = New-Object MMDeviceEnumerator
+        \$device = \$null
+        \$enumerator.GetDefaultAudioEndpoint(0, 1, [ref]\$device)
+        \$endpointVolume = \$null
+        \$guid = [Guid]\"5CDF2C82-841E-4546-9722-0CF74078229A\"
+        \$device.Activate([ref]\$guid, 7, 0, [ref]\$endpointVolume)
+        \$endpointVolume.SetMasterVolumeLevelScalar(${volume / 100}, [Guid]::Empty)
+      "`;
+      
+      try {
+        await execPromise(command);
+        return { success: true, volume };
+      } catch (error) {
+        console.error('[Volume] Errore impostazione volume:', error.message);
+        return { success: false, error: error.message };
+      }
+    }
   }, config.iptv);
+
+  alarmManager.start((alarm) => {
+    screenControl.setScreenPower(true);
+    if (mainWindow) {
+      mainWindow.setFullScreen(true);
+      mainWindow.webContents.send("alarm:trigger", alarm);
+    }
+  });
 
   // --- IPC dal renderer ---
   ipcMain.on("ui:setScreenPower", (_e, on) => screenControl.setScreenPower(on));
@@ -194,6 +303,121 @@ app.whenReady().then(() => {
   ipcMain.on("ui:leftSpotifyView", () => stopSpotifyPolling());
 
   ipcMain.handle("iptv:getConfig", () => config.iptv);
+  ipcMain.handle("alarm:stop", () => {
+    alarmManager.stop();
+    return { success: true };
+  });
+
+  // --- Bluetooth IPC ---
+  ipcMain.handle("bluetooth:getDevices", async () => {
+    return await bluetooth.getBluetoothDevices();
+  });
+
+  ipcMain.handle("bluetooth:connect", async (_e, instanceId) => {
+    return await bluetooth.connectBluetoothDevice(instanceId);
+  });
+
+  ipcMain.handle("bluetooth:disconnect", async (_e, instanceId) => {
+    return await bluetooth.disconnectBluetoothDevice(instanceId);
+  });
+
+  ipcMain.handle("bluetooth:remove", async (_e, instanceId) => {
+    return await bluetooth.removeBluetoothDevice(instanceId);
+  });
+
+  // --- Volume Control IPC ---
+  ipcMain.handle("volume:set", async (_e, level) => {
+    try {
+      // Use Windows Audio Session API via PowerShell
+      const { exec } = require('child_process');
+      const util = require('util');
+      const execPromise = util.promisify(exec);
+      
+      // Clamp volume between 0 and 100
+      const volume = Math.max(0, Math.min(100, Math.round(level)));
+      
+      // Use nircmd or PowerShell to set system volume
+      // PowerShell approach using AudioEndpointVolume
+      const command = `powershell -Command "
+        Add-Type -TypeDefinition @'
+        using System;
+        using System.Runtime.InteropServices;
+        [Guid(\"5CDF2C82-841E-4546-9722-0CF74078229A\"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        interface IAudioEndpointVolume {
+          int GetMasterVolumeLevelScalar(out float pfLevel);
+          int SetMasterVolumeLevelScalar(float fLevel, Guid pguidEventContext);
+        }
+        [Guid(\"D666063F-1587-4E43-81F1-B948E807363F\"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        interface IMMDevice {
+          int Activate(ref Guid iid, int dwClsCtx, int pActivationParams, out IAudioEndpointVolume ppInterface);
+        }
+        [Guid(\"A95664D2-9614-4F35-A746-DE8DB63617E6\"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        interface IMMDeviceEnumerator {
+          int GetDefaultAudioEndpoint(int dataFlow, int role, out IMMDevice ppDevice);
+        }
+        [ComImport, Guid(\"BCDE0395-E52F-467C-8E3D-C4579291692E\")] class MMDeviceEnumerator { }
+        '@
+        \$enumerator = New-Object MMDeviceEnumerator
+        \$device = \$null
+        \$enumerator.GetDefaultAudioEndpoint(0, 1, [ref]\$device)
+        \$endpointVolume = \$null
+        \$guid = [Guid]\"5CDF2C82-841E-4546-9722-0CF74078229A\"
+        \$device.Activate([ref]\$guid, 7, 0, [ref]\$endpointVolume)
+        \$endpointVolume.SetMasterVolumeLevelScalar(${volume / 100}, [Guid]::Empty)
+      "`;
+      
+      await execPromise(command);
+      return { success: true, volume };
+    } catch (error) {
+      console.error('[Volume] Errore impostazione volume:', error.message);
+      return { success: false, error: error.message };
+    }
+  });
+
+  ipcMain.handle("volume:get", async () => {
+    try {
+      const { exec } = require('child_process');
+      const util = require('util');
+      const execPromise = util.promisify(exec);
+      
+      const command = `powershell -Command "
+        Add-Type -TypeDefinition @'
+        using System;
+        using System.Runtime.InteropServices;
+        [Guid(\"5CDF2C82-841E-4546-9722-0CF74078229A\"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        interface IAudioEndpointVolume {
+          int GetMasterVolumeLevelScalar(out float pfLevel);
+          int SetMasterVolumeLevelScalar(float fLevel, Guid pguidEventContext);
+        }
+        [Guid(\"D666063F-1587-4E43-81F1-B948E807363F\"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        interface IMMDevice {
+          int Activate(ref Guid iid, int dwClsCtx, int pActivationParams, out IAudioEndpointVolume ppInterface);
+        }
+        [Guid(\"A95664D2-9614-4F35-A746-DE8DB63617E6\"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        interface IMMDeviceEnumerator {
+          int GetDefaultAudioEndpoint(int dataFlow, int role, out IMMDevice ppDevice);
+        }
+        [ComImport, Guid(\"BCDE0395-E52F-467C-8E3D-C4579291692E\")] class MMDeviceEnumerator { }
+        '@
+        \$enumerator = New-Object MMDeviceEnumerator
+        \$device = \$null
+        \$enumerator.GetDefaultAudioEndpoint(0, 1, [ref]\$device)
+        \$endpointVolume = \$null
+        \$guid = [Guid]\"5CDF2C82-841E-4546-9722-0CF74078229A\"
+        \$device.Activate([ref]\$guid, 7, 0, [ref]\$endpointVolume)
+        \$level = 0.0
+        \$endpointVolume.GetMasterVolumeLevelScalar([ref]\$level)
+        [int](\$level * 100)
+      "`;
+      
+      const { stdout } = await execPromise(command);
+      const volume = parseInt(stdout.trim());
+      return { success: true, volume: isNaN(volume) ? 100 : volume };
+    } catch (error) {
+      console.error('[Volume] Errore lettura volume:', error.message);
+      return { success: false, error: error.message, volume: 100 };
+    }
+  });
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createMainWindow();

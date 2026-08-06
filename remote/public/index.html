@@ -5,29 +5,119 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cozy Desk — Telecomando</title>
 <style>
-  body { font-family: system-ui, sans-serif; background:#111318; color:#eee; margin:0; padding:0; }
-  .container { max-width:600px; margin:0 auto; padding:24px 16px; }
-  h1 { font-size:20px; margin:0 0 20px; text-align:center; }
-  h2 { font-size:14px; margin:20px 0 10px; text-transform:uppercase; opacity:.6; }
-  .btn { display:block; width:100%; padding:14px; margin:8px 0; border:none; border-radius:10px;
-         font-size:15px; background:#2a2f3a; color:#fff; cursor:pointer; transition:all .2s; }
-  .btn:hover { background:#363b48; }
-  .btn.active { background:#4f7cff; }
-  .btn.danger { background:#7a1f1f; margin-top:24px; }
-  .btn.danger:hover { background:#8a2f2f; }
-  .status { margin-top:16px; font-size:13px; opacity:.7; padding:12px; border-radius:8px; background:#1a1f2a; }
-  .status.offline { background: rgba(161,58,58,0.35); color:#ff9999; }
-  
-  .section { margin-top:24px; padding:16px; background:#1a1f2a; border-radius:10px; }
-  
-  .category { margin-top:16px; }
-  .category-title { font-size:16px; font-weight:600; margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+  :root { color-scheme:dark; --bg:#0a0b12; --card:rgba(28,30,45,.82); --line:rgba(255,255,255,.08); --text:#f7f7fb; --muted:#9da0b5; --pink:#fe799d; --violet:#8d73ff; --mint:#5be1bb; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; background:radial-gradient(circle at 10% -5%,#563755 0,transparent 35%),radial-gradient(circle at 95% 20%,#222964 0,transparent 36%),var(--bg); color:var(--text); margin:0; min-height:100vh; }
+  .container { max-width:520px; margin:0 auto; padding:22px 16px 100px; }
+  h1 { font-size:26px; letter-spacing:-.8px; margin:2px 0 22px; text-align:left; font-weight:750; }
+  h1::after { content:"Telecomando"; display:block; color:var(--muted); font-size:12px; letter-spacing:1.1px; font-weight:650; margin-top:3px; text-transform:uppercase; }
+  h2 { font-size:11px; letter-spacing:1.2px; margin:0 0 14px; text-transform:uppercase; color:var(--muted); font-weight:750; }
+  .btn { display:block; width:100%; min-height:52px; padding:13px 15px; margin:8px 0 0; border:1px solid transparent; border-radius:16px; font-size:15px; font-weight:650; background:linear-gradient(135deg,#35384b,#242635); color:#fff; cursor:pointer; transition:transform .16s,filter .16s,background .16s; }
+  .btn:active { transform:scale(.975); filter:brightness(1.14); }
+  .btn.active { background:linear-gradient(135deg,var(--violet),#6170ef); }
+  .btn.danger { background:linear-gradient(135deg,#7d2540,#57182b); margin-top:18px; }
+  .btn.secondary,.refresh-btn { background:rgba(255,255,255,.07); border-color:var(--line); }
+  .status { position:fixed; z-index:5; left:50%; bottom:16px; transform:translateX(-50%); min-width:132px; text-align:center; font-size:12px; font-weight:700; color:#d8ffef; padding:10px 14px; border-radius:999px; border:1px solid rgba(91,225,187,.25); background:rgba(12,18,26,.88); backdrop-filter:blur(16px); box-shadow:0 8px 28px rgba(0,0,0,.32); }
+  .status.offline { border-color:rgba(255,117,137,.4); color:#ffc3ce; }
+  .section { margin-top:14px; padding:17px; background:linear-gradient(145deg,rgba(40,42,59,.9),rgba(24,25,37,.9)); border:1px solid var(--line); border-radius:23px; box-shadow:0 12px 34px rgba(0,0,0,.16); }
+  .action-grid { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+  .action-grid .btn { margin:0; min-height:62px; font-size:14px; }
+  .category { margin-top:11px; border:1px solid var(--line); background:rgba(0,0,0,.12); border-radius:15px; overflow:hidden; }
+  .category-title { font-size:15px; font-weight:650; padding:13px; margin:0; display:flex; align-items:center; gap:8px; cursor:pointer; user-select:none; }
   .category-title-icon { font-size:18px; }
+  .category-title-arrow { margin-left:auto; transition: transform .2s; }
+  .category-title.open .category-title-arrow { transform: rotate(180deg); }
+  .category-content { max-height: 0; overflow: hidden; transition: max-height .3s ease-out; }
+  .category-content.open { max-height:2000px; padding:0 8px 8px; transition:max-height .5s ease-in; }
   
   .channel-btn { display:block; width:100%; text-align:left; padding:12px; margin:6px 0; 
-                 background:#2a2f3a; border:none; border-radius:8px; cursor:pointer; color:#fff;
+                 background:rgba(255,255,255,.065); border:1px solid transparent; border-radius:11px; cursor:pointer; color:#fff;
                  font-size:14px; transition:all .15s; border-left:3px solid transparent; }
-  .channel-btn:hover { background:#363b48; border-left-color:#4f7cff; }
+  .channel-btn.playing { background:rgba(91,225,187,.14); border-left-color:var(--mint); }
+  
+  /* Volume Control */
+  .volume-control { display:flex; align-items:center; gap:12px; margin:4px 0 14px; padding:14px; border-radius:16px; background:rgba(0,0,0,.14); }
+  .volume-slider { flex:1; height:7px; -webkit-appearance:none; appearance:none; background:#44475d; border-radius:8px; outline:none; }
+  .volume-slider::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:25px; height:25px; border-radius:50%; background:linear-gradient(135deg,var(--pink),var(--violet)); border:3px solid #191a27; cursor:pointer; }
+  .volume-slider::-moz-range-thumb { width:22px; height:22px; border-radius:50%; background:var(--pink); cursor:pointer; border:none; }
+  .volume-label { min-width:42px; text-align:right; font-size:15px; font-weight:750; }
+  .volume-icon { font-size:21px; }
+  
+  /* Bluetooth */
+  .bluetooth-device { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px; margin:10px 0; background:rgba(0,0,0,.15); border:1px solid var(--line); border-radius:16px; }
+  .bluetooth-device-info { display:flex; flex-direction:column; gap:4px; }
+  .bluetooth-device-name { font-weight:600; font-size:14px; }
+  .bluetooth-device-status { font-size:12px; opacity:.7; }
+  .bluetooth-device-status.connected { color:#4ade80; }
+  .bluetooth-device-status.disconnected { color:#f87171; }
+  .bluetooth-device-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:6px; }
+  .bluetooth-device-actions .btn { min-height:36px; padding:7px 9px; font-size:11px; margin:0; width:auto; border-radius:10px; }
+  
+  .refresh-btn { background:#3a3f4a; margin-top:12px; }
+  .refresh-btn:hover { background:#4a4f5a; }
+  
+  .empty-state { text-align:center; color:var(--muted); padding:20px; font-size:13px; }
+  
+  @media (max-width:380px) { .container { padding-inline:12px; } .section { padding:14px; } .bluetooth-device { align-items:flex-start; flex-direction:column; } .bluetooth-device-actions { justify-content:flex-start; } }
+
+  /* Visual identity: tactile editorial remote, optimised for a one-handed phone view. */
+  :root { color-scheme:light; --ink:#17251f; --paper:#f4efe6; --cream:#fffaf1; --orange:#ee6434; --yellow:#ffc72c; --green:#2e9c73; --line:#1b2c25; --quiet:#65736b; }
+  body { background:linear-gradient(155deg,#f8c646 -18%,transparent 30%),linear-gradient(25deg,#d6efe3 0,transparent 44%),var(--paper); color:var(--ink); }
+  body::before { content:""; position:fixed; width:270px; height:270px; right:-145px; top:140px; border:2px solid rgba(23,37,31,.13); border-radius:50%; pointer-events:none; }
+  .container { max-width:510px; padding:26px 16px 104px; }
+  h1 { display:flex; align-items:center; gap:11px; font-family:Georgia,"Times New Roman",serif; font-size:0; letter-spacing:-1.8px; font-weight:800; color:var(--ink); margin:0 0 26px; }
+  h1::before { content:"Cozy Desk"; display:block; width:auto; height:auto; border:0; border-radius:0; background:none; font:800 32px/1 Georgia,"Times New Roman",serif; letter-spacing:-1.8px; }
+  h1::after { content:"CONTROL ROOM"; display:block; margin-left:auto; padding:6px 8px; color:var(--cream); background:var(--ink); border-radius:3px; font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:9px; letter-spacing:.7px; font-weight:700; transform:rotate(2deg); }
+  .section { position:relative; overflow:hidden; padding:17px; border:2px solid var(--line); border-radius:10px; background:var(--cream); box-shadow:5px 5px 0 var(--line); margin-top:18px; }
+  .section:nth-of-type(2n) { background:#e5f4eb; }
+  .section:nth-of-type(3n) { background:#fff0da; }
+  h2 { position:relative; display:flex; align-items:center; gap:7px; margin:0 0 14px; color:var(--ink); font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:10px; letter-spacing:1.35px; font-weight:900; }
+  h2::after { content:""; height:2px; flex:1; background:var(--ink); opacity:.2; }
+  .btn { min-height:52px; margin-top:9px; border:2px solid var(--line); border-radius:7px; background:var(--cream); color:var(--ink); box-shadow:3px 3px 0 var(--line); font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:13px; font-weight:800; letter-spacing:.05px; transition:transform .12s,box-shadow .12s,background .12s; }
+  .btn:active { transform:translate(3px,3px); box-shadow:0 0 0 var(--line); }
+  .btn.active { background:var(--orange); color:#fffaf1; }
+  .btn.secondary,.refresh-btn { background:#d3eee1; }
+  .btn.danger { background:var(--ink); color:#fffaf1; border-color:var(--ink); box-shadow:3px 3px 0 var(--orange); }
+  .action-grid { gap:11px; }
+  .action-grid .btn { min-height:66px; }
+  .action-grid .btn:last-child { background:var(--yellow); }
+  .volume-control { padding:16px 13px; border:2px solid var(--line); border-radius:7px; background:#fffdf7; }
+  .volume-icon { filter:saturate(.8); }
+  .volume-slider { background:linear-gradient(90deg,var(--orange) 0 48%,#eadfca 48%); height:9px; }
+  .volume-slider::-webkit-slider-thumb { width:24px; height:24px; border:2px solid var(--ink); border-radius:4px; background:var(--yellow); box-shadow:2px 2px 0 var(--ink); }
+  .volume-label { color:var(--orange); font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:14px; }
+  .category { border:2px solid var(--line); border-radius:7px; background:#fffdf7; }
+  .category-title { padding:14px 12px; color:var(--ink); font-family:Georgia,"Times New Roman",serif; font-size:17px; }
+  .category-title-arrow { color:var(--orange); }
+  .channel-btn { padding:13px; border:1px solid rgba(23,37,31,.2); border-left:5px solid var(--yellow); border-radius:5px; background:#fffaf1; color:var(--ink); font-size:13px; font-weight:700; }
+  .channel-btn.playing { background:var(--green); color:#fff; border-left-color:var(--ink); }
+  .bluetooth-device { align-items:flex-start; padding:13px; border:2px solid var(--line); border-radius:7px; background:#fffdf7; }
+  .bluetooth-device-name { color:var(--ink); font-family:Georgia,"Times New Roman",serif; font-size:17px; line-height:1.05; }
+  .bluetooth-device-status { color:var(--quiet); font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:10px; font-weight:800; }
+  .bluetooth-device-status.connected { color:var(--green); }
+  .bluetooth-device-status.disconnected { color:#bb4030; }
+  .bluetooth-device-actions .btn { min-height:34px; padding:6px 8px; border-width:1px; border-radius:4px; box-shadow:2px 2px 0 var(--line); font-size:10px; }
+  .empty-state { color:var(--quiet); font-family:ui-monospace,SFMono-Regular,Consolas,monospace; }
+  .status { bottom:15px; color:var(--cream); border:2px solid var(--ink); border-radius:5px; background:var(--ink); box-shadow:3px 3px 0 var(--orange); font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:10px; letter-spacing:.4px; }
+  .status.offline { color:#fff; border-color:#7c241f; background:#a3372c; }
+  .alarm-form { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .alarm-form label { display:flex; flex-direction:column; gap:6px; color:var(--quiet); font:800 10px/1 ui-monospace,SFMono-Regular,Consolas,monospace; letter-spacing:.6px; }
+  .alarm-form input,.alarm-form select { width:100%; min-height:44px; border:2px solid var(--line); border-radius:6px; background:#fffdf7; color:var(--ink); padding:8px; font:700 14px/1 ui-monospace,SFMono-Regular,Consolas,monospace; }
+  .alarm-days { grid-column:1/-1; display:flex; gap:5px; justify-content:space-between; }
+  .alarm-days label { flex:1; display:grid; place-items:center; min-height:36px; border:2px solid var(--line); border-radius:5px; color:var(--ink); cursor:pointer; }
+  .alarm-days input { position:absolute; opacity:0; pointer-events:none; }
+  .alarm-days label:has(input:checked) { background:var(--yellow); box-shadow:2px 2px 0 var(--line); }
+  .alarm-list { margin-top:13px; display:grid; gap:8px; }
+  .alarm-item { display:flex; align-items:center; gap:10px; padding:11px; border:2px solid var(--line); border-radius:7px; background:#fffdf7; }
+  .alarm-item-time { font:800 25px/1 Georgia,"Times New Roman",serif; color:var(--orange); }
+  .alarm-item-meta { flex:1; color:var(--quiet); font:800 10px/1.35 ui-monospace,SFMono-Regular,Consolas,monospace; }
+  .alarm-item .btn { width:auto; min-height:32px; margin:0; padding:6px 8px; font-size:10px; border-width:1px; border-radius:4px; box-shadow:2px 2px 0 var(--line); }
+  .remote-alarm-overlay { display:none; position:fixed; inset:0; z-index:20; align-items:center; justify-content:center; background:#17251f; color:#fffaf1; }
+  .remote-alarm-overlay.active { display:flex; }
+  .remote-alarm-overlay-content { width:min(86vw,380px); text-align:center; }
+  .remote-alarm-time { font:800 clamp(65px,20vw,104px)/.95 Georgia,"Times New Roman",serif; letter-spacing:-.07em; }
+  .remote-alarm-overlay p { color:var(--yellow); font:800 11px/1 ui-monospace,SFMono-Regular,Consolas,monospace; letter-spacing:1.6px; }
+  .remote-alarm-overlay .btn { margin-top:34px; min-height:66px; background:var(--orange); color:#fffaf1; border-color:#fffaf1; box-shadow:5px 5px 0 var(--yellow); }
 </style>
 </head>
 <body>
@@ -36,14 +126,43 @@
     
     <div class="section">
       <h2>Schermata</h2>
-      <button class="btn" id="cozyOn">Attiva Cozy View</button>
-      <button class="btn" id="cozyOff">Disattiva Cozy View</button>
+      <div class="action-grid">
+        <button class="btn active" id="cozyOn">Attiva Cozy View</button>
+        <button class="btn" id="cozyOff">Disattiva Cozy View</button>
+      </div>
     </div>
 
     <div class="section">
       <h2>Schermo</h2>
-      <button class="btn" id="screenOn">Accendi schermo</button>
-      <button class="btn" id="screenOff">Spegni schermo</button>
+      <div class="action-grid">
+        <button class="btn active" id="screenOn">Accendi schermo</button>
+        <button class="btn" id="screenOff">Spegni schermo</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>🔊 Volume</h2>
+      <div class="volume-control">
+        <span class="volume-icon" id="volumeIcon">🔊</span>
+        <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="100">
+        <span class="volume-label" id="volumeLabel">100%</span>
+      </div>
+      <button class="btn secondary" id="volumeMute">🔇 Muto</button>
+    </div>
+
+    <div class="section">
+      <h2>Sveglie</h2>
+      <form id="alarmForm" class="alarm-form">
+        <label>ORA<input id="alarmTimeInput" type="time" required value="07:00"></label>
+        <label>MOTIVO<select id="alarmMotifInput"><option value="aurora">Aurora</option><option value="pulse">Pulse</option><option value="calm">Calma</option></select></label>
+        <label style="grid-column:1/-1;">VOLUME <input id="alarmVolumeInput" type="range" min="0" max="100" value="65"></label>
+        <div class="alarm-days" aria-label="Giorni">
+          <label>L<input type="checkbox" value="1" checked></label><label>M<input type="checkbox" value="2" checked></label><label>M<input type="checkbox" value="3" checked></label><label>G<input type="checkbox" value="4" checked></label><label>V<input type="checkbox" value="5" checked></label><label>S<input type="checkbox" value="6"></label><label>D<input type="checkbox" value="0"></label>
+        </div>
+        <button class="btn active" type="submit" style="grid-column:1/-1;">Aggiungi sveglia</button>
+      </form>
+      <div class="alarm-list" id="alarmList"></div>
+      <button class="btn danger" id="remoteAlarmStop" style="display:none;">Spegni sveglia attiva</button>
     </div>
 
     <div class="section">
@@ -57,9 +176,24 @@
       <div id="spotifyPlaylists" style="margin-top:10px;display:none;"></div>
     </div>
 
+    <div class="section">
+      <h2>📱 Bluetooth</h2>
+      <button class="btn refresh-btn" id="bluetoothRefresh">🔄 Aggiorna dispositivi</button>
+      <button class="btn" id="bluetoothPairSrs" style="margin-top:8px;">Associa SRS-XB23</button>
+      <div id="bluetoothDevices"></div>
+    </div>
+
     <button class="btn danger" id="shutdownApp">⛔ Chiudi applicazione</button>
 
     <div class="status" id="status">connessione...</div>
+  </div>
+
+  <div class="remote-alarm-overlay" id="remoteAlarmOverlay">
+    <div class="remote-alarm-overlay-content">
+      <div class="remote-alarm-time" id="remoteAlarmTime">--:--</div>
+      <p>SVEGLIA ATTIVA</p>
+      <button class="btn" id="remoteAlarmOverlayStop">SPEGNI</button>
+    </div>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
@@ -67,6 +201,11 @@
     const socket = io();
     const statusEl = document.getElementById("status");
     const iptvCategoriesEl = document.getElementById("iptvCategories");
+    const bluetoothDevicesEl = document.getElementById("bluetoothDevices");
+    
+    let currentVolume = 100;
+    let isMuted = false;
+    let currentPlayingChannel = null;
 
     socket.on("connect", () => {
       statusEl.textContent = "✅ connesso";
@@ -88,24 +227,44 @@
       }
     });
 
-    // Load IPTV categories
+    // Load IPTV categories with dropdowns
     fetch("/iptv/config").then(r => r.json()).then(config => {
       if (config && config.categories) {
-        iptvCategoriesEl.innerHTML = config.categories.map(cat => `
+        iptvCategoriesEl.innerHTML = config.categories.map((cat, catIndex) => `
           <div class="category">
-            <div class="category-title">
+            <div class="category-title" onclick="toggleCategory(${catIndex})">
               <span class="category-title-icon">${cat.icon || "📺"}</span>
               <span>${cat.name}</span>
+              <span class="category-title-arrow">▼</span>
             </div>
-            ${(cat.channels || []).map(ch => `
-              <button class="channel-btn" onclick="playChannel('${ch.url}', '${cat.name} - ${ch.name}')">${ch.name}</button>
-            `).join("")}
+            <div class="category-content" id="category-${catIndex}">
+              ${(cat.channels || []).map(ch => `
+                <button class="channel-btn" onclick="playChannel('${ch.url.replace(/'/g, "\\'")}', '${(cat.name + " - " + ch.name).replace(/'/g, "\\'")}', this)">${ch.name}</button>
+              `).join("")}
+            </div>
           </div>
         `).join("");
+        
+        // Open first category by default
+        setTimeout(() => toggleCategory(0), 100);
       }
     }).catch(err => console.error("Errore caricamento IPTV:", err));
 
-    window.playChannel = (url, name) => {
+    window.toggleCategory = (index) => {
+      const title = document.querySelectorAll('.category-title')[index];
+      const content = document.getElementById(`category-${index}`);
+      if (title && content) {
+        const isOpen = title.classList.toggle('open');
+        content.classList.toggle('open', isOpen);
+      }
+    };
+
+    window.playChannel = (url, name, btnElement) => {
+      // Update UI to show playing state
+      document.querySelectorAll('.channel-btn').forEach(btn => btn.classList.remove('playing'));
+      if (btnElement) btnElement.classList.add('playing');
+      currentPlayingChannel = name;
+      
       socket.emit("playIPTV", { url, name });
     };
 
@@ -142,11 +301,337 @@
       }
     };
 
+    // Volume Control
+    const volumeSlider = document.getElementById("volumeSlider");
+    const volumeLabel = document.getElementById("volumeLabel");
+    const volumeIcon = document.getElementById("volumeIcon");
+    const volumeMuteBtn = document.getElementById("volumeMute");
+
+    // Initialize volume to max (100%)
+    async function initVolume() {
+      try {
+        const response = await fetch("/volume/get");
+        const data = await response.json();
+        if (data.success) {
+          currentVolume = data.volume;
+          volumeSlider.value = currentVolume;
+          volumeLabel.textContent = currentVolume + "%";
+          updateVolumeIcon();
+        }
+      } catch (err) {
+        console.error("Errore inizializzazione volume:", err);
+        // Default to 100%
+        currentVolume = 100;
+        volumeSlider.value = 100;
+        volumeLabel.textContent = "100%";
+        updateVolumeIcon();
+        // Set volume to max on startup
+        setVolume(100);
+      }
+    }
+
+    function updateVolumeIcon() {
+      if (isMuted || currentVolume === 0) {
+        volumeIcon.textContent = "🔇";
+      } else if (currentVolume < 30) {
+        volumeIcon.textContent = "🔈";
+      } else if (currentVolume < 70) {
+        volumeIcon.textContent = "🔉";
+      } else {
+        volumeIcon.textContent = "🔊";
+      }
+    }
+
+    async function setVolume(level) {
+      try {
+        const response = await fetch("/volume/set", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ level })
+        });
+        const data = await response.json();
+        if (data.success) {
+          currentVolume = data.volume;
+          volumeSlider.value = currentVolume;
+          volumeLabel.textContent = currentVolume + "%";
+          isMuted = currentVolume === 0;
+          volumeMuteBtn.textContent = isMuted ? "🔊 Riattiva" : "🔇 Muto";
+          updateVolumeIcon();
+        }
+      } catch (err) {
+        console.error("Errore impostazione volume:", err);
+      }
+    }
+
+    volumeSlider.addEventListener("input", (e) => {
+      const vol = parseInt(e.target.value);
+      volumeLabel.textContent = vol + "%";
+      currentVolume = vol;
+      isMuted = vol === 0;
+      volumeMuteBtn.textContent = isMuted ? "🔊 Riattiva" : "🔇 Muto";
+      updateVolumeIcon();
+    });
+
+    volumeSlider.addEventListener("change", (e) => {
+      setVolume(parseInt(e.target.value));
+    });
+
+    volumeMuteBtn.onclick = () => {
+      if (isMuted) {
+        setVolume(currentVolume > 0 ? currentVolume : 50);
+      } else {
+        setVolume(0);
+      }
+    };
+
+    // Alarm management
+    const alarmForm = document.getElementById("alarmForm");
+    const alarmList = document.getElementById("alarmList");
+    const remoteAlarmStop = document.getElementById("remoteAlarmStop");
+    const remoteAlarmOverlay = document.getElementById("remoteAlarmOverlay");
+    const remoteAlarmTime = document.getElementById("remoteAlarmTime");
+    const remoteAlarmOverlayStop = document.getElementById("remoteAlarmOverlayStop");
+    const dayNames = ["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"];
+
+    function renderAlarms(alarms) {
+      alarmList.replaceChildren(...alarms.map((alarm) => {
+        const item = document.createElement("div");
+        item.className = "alarm-item";
+        const time = document.createElement("div");
+        time.className = "alarm-item-time";
+        time.textContent = alarm.time;
+        const meta = document.createElement("div");
+        meta.className = "alarm-item-meta";
+        meta.textContent = `${alarm.days.sort().map((day) => dayNames[day]).join(" · ")}\n${alarm.motif} · ${alarm.volume}%`;
+        const remove = document.createElement("button");
+        remove.className = "btn danger";
+        remove.textContent = "Elimina";
+        remove.addEventListener("click", async () => {
+          await fetch(`/alarms/${encodeURIComponent(alarm.id)}`, { method: "DELETE" });
+          loadAlarms();
+        });
+        item.append(time, meta, remove);
+        return item;
+      }));
+      if (!alarms.length) alarmList.innerHTML = '<div class="empty-state">Nessuna sveglia programmata</div>';
+    }
+
+    async function loadAlarms() {
+      try {
+        const data = await fetch("/alarms").then((response) => response.json());
+        renderAlarms(data.alarms || []);
+      } catch (error) {
+        alarmList.innerHTML = '<div class="empty-state">Impossibile caricare le sveglie</div>';
+      }
+    }
+
+    alarmForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const days = [...alarmForm.querySelectorAll('.alarm-days input:checked')].map((input) => Number(input.value));
+      const alarm = {
+        time: document.getElementById("alarmTimeInput").value,
+        motif: document.getElementById("alarmMotifInput").value,
+        volume: Number(document.getElementById("alarmVolumeInput").value),
+        days
+      };
+      const response = await fetch("/alarms", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(alarm) });
+      const data = await response.json();
+      if (!response.ok) return alert(data.error || "Impossibile salvare la sveglia");
+      renderAlarms(data.alarms || []);
+    });
+
+    async function stopRemoteAlarm() {
+      await fetch("/alarms/stop", { method: "POST" });
+      remoteAlarmStop.style.display = "none";
+      remoteAlarmOverlay.classList.remove("active");
+    }
+    remoteAlarmStop.addEventListener("click", stopRemoteAlarm);
+    remoteAlarmOverlayStop.addEventListener("click", stopRemoteAlarm);
+
+    async function refreshAlarmState() {
+      try {
+        const state = await fetch("/state").then((response) => response.json());
+        const active = state.activeAlarm;
+        remoteAlarmStop.style.display = active ? "block" : "none";
+        remoteAlarmOverlay.classList.toggle("active", Boolean(active));
+        if (active) remoteAlarmTime.textContent = active.time || "--:--";
+      } catch (_) {}
+    }
+    setInterval(refreshAlarmState, 2000);
+    refreshAlarmState();
+
+    socket.on("state", (state) => {
+      remoteAlarmStop.style.display = state.activeAlarm ? "block" : "none";
+    });
+
+    // Bluetooth Management
+    function renderBluetoothDevices(devices) {
+      // InstanceId contiene barre inverse: conservarlo in una closure evita che
+      // JavaScript lo modifichi come accadeva con gli attributi onclick.
+      bluetoothDevicesEl.replaceChildren(...devices.map((device) => {
+        const row = document.createElement('div');
+        row.className = 'bluetooth-device';
+        row.dataset.instanceId = device.instanceId;
+
+        const info = document.createElement('div');
+        info.className = 'bluetooth-device-info';
+        const name = document.createElement('span');
+        name.className = 'bluetooth-device-name';
+        name.textContent = device.name;
+        const status = document.createElement('span');
+        const available = device.status === 'OK';
+        status.className = `bluetooth-device-status ${available ? 'connected' : 'disconnected'}`;
+        status.textContent = available ? '🟢 Disponibile' : '🔴 Non disponibile';
+        info.append(name, status);
+
+        const actions = document.createElement('div');
+        actions.className = 'bluetooth-device-actions';
+        const connect = document.createElement('button');
+        connect.className = 'btn secondary';
+        connect.textContent = 'Connetti';
+        connect.addEventListener('click', () => window.connectBluetooth(device.instanceId, connect));
+        const disconnect = document.createElement('button');
+        disconnect.className = 'btn secondary';
+        disconnect.textContent = 'Disconnetti';
+        disconnect.addEventListener('click', () => window.disconnectBluetooth(device.instanceId, disconnect));
+        const remove = document.createElement('button');
+        remove.className = 'btn danger';
+        remove.style.cssText = 'margin:0;padding:8px 10px;font-size:11px;';
+        remove.textContent = 'Rimuovi';
+        remove.addEventListener('click', () => window.removeBluetooth(device.instanceId, remove));
+        actions.append(connect, disconnect, remove);
+        row.append(info, actions);
+        return row;
+      }));
+    }
+
+    async function loadBluetoothDevices() {
+      bluetoothDevicesEl.innerHTML = '<div class="empty-state">Caricamento dispositivi...</div>';
+      try {
+        const response = await fetch("/bluetooth/devices");
+        const devices = await response.json();
+        
+        if (devices.length === 0) {
+          bluetoothDevicesEl.innerHTML = '<div class="empty-state">Nessun dispositivo Bluetooth trovato</div>';
+          return;
+        }
+        
+        renderBluetoothDevices(devices);
+        return;
+        bluetoothDevicesEl.innerHTML = devices.map(device => `
+          <div class="bluetooth-device" data-instance-id="${device.instanceId}">
+            <div class="bluetooth-device-info">
+              <span class="bluetooth-device-name">${device.name}</span>
+              <span class="bluetooth-device-status ${device.status === 'OK' ? 'connected' : 'disconnected'}">
+                ${device.status === 'OK' ? '🟢 Connesso' : '🔴 Disconnesso'}
+              </span>
+            </div>
+            <div class="bluetooth-device-actions">
+              <button class="btn secondary" onclick="connectBluetooth('${device.instanceId.replace(/'/g, "\\'")}', this)">Connetti</button>
+              <button class="btn secondary" onclick="disconnectBluetooth('${device.instanceId.replace(/'/g, "\\'")}', this)">Disconnetti</button>
+              <button class="btn danger" onclick="removeBluetooth('${device.instanceId.replace(/'/g, "\\'")}', this)" style="margin:0;padding:8px 10px;font-size:11px;">Rimuovi</button>
+            </div>
+          </div>
+        `).join("");
+      } catch (err) {
+        console.error("Errore caricamento Bluetooth:", err);
+        bluetoothDevicesEl.innerHTML = '<div class="empty-state">Errore nel caricamento dei dispositivi</div>';
+      }
+    }
+
+    window.connectBluetooth = async (instanceId, btn) => {
+      btn.disabled = true;
+      btn.textContent = "Connessione...";
+      try {
+        const response = await fetch("/bluetooth/connect", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ instanceId })
+        });
+        const data = await response.json();
+        alert(data.message || (data.success ? "Connesso!" : "Errore connessione"));
+        loadBluetoothDevices();
+      } catch (err) {
+        alert("Errore: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Connetti";
+      }
+    };
+
+    window.disconnectBluetooth = async (instanceId, btn) => {
+      btn.disabled = true;
+      btn.textContent = "Disconnessione...";
+      try {
+        const response = await fetch("/bluetooth/disconnect", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ instanceId })
+        });
+        const data = await response.json();
+        alert(data.message || (data.success ? "Disconnesso!" : "Errore disconnessione"));
+        loadBluetoothDevices();
+      } catch (err) {
+        alert("Errore: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Disconnetti";
+      }
+    };
+
+    window.removeBluetooth = async (instanceId, btn) => {
+      if (!confirm("Rimuovere definitivamente questo dispositivo Bluetooth?")) return;
+      btn.disabled = true;
+      btn.textContent = "Rimozione...";
+      try {
+        const response = await fetch("/bluetooth/remove", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ instanceId })
+        });
+        const data = await response.json();
+        alert(data.message || (data.success ? "Rimosso!" : "Errore rimozione"));
+        loadBluetoothDevices();
+      } catch (err) {
+        alert("Errore: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Rimuovi";
+      }
+    };
+
+    document.getElementById("bluetoothRefresh").onclick = loadBluetoothDevices;
+    document.getElementById("bluetoothPairSrs").onclick = async (event) => {
+      const button = event.currentTarget;
+      button.disabled = true;
+      button.textContent = "Ricerca SRS-XB23...";
+      try {
+        const response = await fetch("/bluetooth/pair", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: "SRS-XB23" })
+        });
+        const data = await response.json();
+        alert(data.message || (data.success ? "SRS-XB23 associato" : "Associazione non riuscita"));
+        loadBluetoothDevices();
+      } catch (err) {
+        alert("Errore associazione: " + err.message);
+      } finally {
+        button.disabled = false;
+        button.textContent = "Associa SRS-XB23";
+      }
+    };
+
     document.getElementById("shutdownApp").onclick = () => {
       if (confirm("Chiudere l'app? Non potrai riaprirla da qui.")) {
         socket.emit("shutdownApp");
       }
     };
+
+    // Initialize
+    initVolume();
+    loadAlarms();
+    loadBluetoothDevices();
   </script>
 </body>
 </html>

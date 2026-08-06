@@ -33,5 +33,20 @@ contextBridge.exposeInMainWorld("cozyDesk", {
 
   // IPTV
   getIPTVConfig: () => ipcRenderer.invoke("iptv:getConfig"),
-  onIPTVPlay: (cb) => ipcRenderer.on("iptv:play", (_e, data) => cb(data))
+  onIPTVPlay: (cb) => ipcRenderer.on("iptv:play", (_e, data) => cb(data)),
+
+  // Sveglia
+  onAlarmTrigger: (cb) => ipcRenderer.on("alarm:trigger", (_e, alarm) => cb(alarm)),
+  onAlarmStop: (cb) => ipcRenderer.on("alarm:stop", () => cb()),
+  stopAlarm: () => ipcRenderer.invoke("alarm:stop"),
+
+  // Bluetooth
+  getBluetoothDevices: () => ipcRenderer.invoke("bluetooth:getDevices"),
+  connectBluetoothDevice: (instanceId) => ipcRenderer.invoke("bluetooth:connect", instanceId),
+  disconnectBluetoothDevice: (instanceId) => ipcRenderer.invoke("bluetooth:disconnect", instanceId),
+  removeBluetoothDevice: (instanceId) => ipcRenderer.invoke("bluetooth:remove", instanceId),
+
+  // Volume Control
+  setVolume: (level) => ipcRenderer.invoke("volume:set", level),
+  getVolume: () => ipcRenderer.invoke("volume:get")
 });

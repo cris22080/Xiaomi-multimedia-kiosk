@@ -7,6 +7,7 @@ const http = require("http");
 const path = require("path");
 const { Server } = require("socket.io");
 const spotify = require("./spotify");
+const bluetooth = require("./bluetooth");
 
 let io = null;
 let iptvConfigRef = null;
@@ -43,6 +44,10 @@ function start(port, handlers, config) {
     res.json(iptvConfigRef || {});
   });
 
+  app.get("/state", (req, res) => {
+    res.json(handlers.onGetState());
+  });
+
   // Serve an imported channels playlist if present at repo root
   app.get("/channels.m3u8", (req, res) => {
     const channelsPath = path.join(__dirname, "..", "channels.m3u8");
@@ -52,6 +57,103 @@ function start(port, handlers, config) {
     } else {
       res.status(404).send("Not found");
     }
+  });
+
+  // Bluetooth endpoints
+  app.get("/bluetooth/devices", async (req, res) => {
+    try {
+      const devices = await bluetooth.getBluetoothDevices();
+      res.json(devices);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.post("/bluetooth/connect", express.json(), async (req, res) => {
+    try {
+      const { instanceId } = req.body;
+      if (!instanceId) {
+        return res.status(400).json({ error: 'instanceId richiesto' });
+      }
+      const result = await bluetooth.connectBluetoothDevice(instanceId);
+      res.json(result);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.post("/bluetooth/disconnect", express.json(), async (req, res) => {
+    try {
+      const { instanceId } = req.body;
+      if (!instanceId) {
+        return res.status(400).json({ error: 'instanceId richiesto' });
+      }
+      const result = await bluetooth.disconnectBluetoothDevice(instanceId);
+      res.json(result);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.post("/bluetooth/remove", express.json(), async (req, res) => {
+    try {
+      const { instanceId } = req.body;
+      if (!instanceId) {
+        return res.status(400).json({ error: 'instanceId richiesto' });
+      }
+      const result = await bluetooth.removeBluetoothDevice(instanceId);
+      res.json(result);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.post("/bluetooth/pair", express.json(), async (req, res) => {
+    try {
+      const { name } = req.body;
+      if (!name) return res.status(400).json({ error: 'nome dispositivo richiesto' });
+      const result = await bluetooth.pairBluetoothDevice(name);
+      res.json(result);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // Volume endpoints
+  app.get("/volume/get", async (req, res) => {
+    try {
+      const result = await handlers.onGetVolume();
+      res.json(result);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.post("/volume/set", express.json(), async (req, res) => {
+    try {
+      const { level } = req.body;
+      if (level === undefined) {
+        return res.status(400).json({ error: 'level richiesto' });
+      }
+      const result = await handlers.onSetVolume(level);
+      res.json(result);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // Alarm endpoints: persistent scheduling is handled by the main process.
+  app.get("/alarms", (req, res) => {
+    try { res.json(handlers.onGetAlarms()); } catch (err) { res.status(500).json({ error: err.message }); }
+  });
+  app.post("/alarms", express.json(), (req, res) => {
+    try { res.json(handlers.onSaveAlarm(req.body)); } catch (err) { res.status(400).json({ error: err.message }); }
+  });
+  app.delete("/alarms/:id", (req, res) => {
+    try { res.json(handlers.onDeleteAlarm(req.params.id)); } catch (err) { res.status(400).json({ error: err.message }); }
+  });
+  app.post("/alarms/stop", (req, res) => {
+    try { res.json(handlers.onStopAlarm()); } catch (err) { res.status(500).json({ error: err.message }); }
   });
 
   const server = http.createServer(app);
