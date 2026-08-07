@@ -7,7 +7,7 @@ const http = require("http");
 const path = require("path");
 const { Server } = require("socket.io");
 const spotify = require("./spotify");
-const bluetooth = require("./bluetooth");
+
 
 let io = null;
 let iptvConfigRef = null;
@@ -59,65 +59,7 @@ function start(port, handlers, config) {
     }
   });
 
-  // Bluetooth endpoints
-  app.get("/bluetooth/devices", async (req, res) => {
-    try {
-      const devices = await bluetooth.getBluetoothDevices();
-      res.json(devices);
-    } catch (err) {
-      res.status(500).json({ error: err.message });
-    }
-  });
-
-  app.post("/bluetooth/connect", express.json(), async (req, res) => {
-    try {
-      const { instanceId } = req.body;
-      if (!instanceId) {
-        return res.status(400).json({ error: 'instanceId richiesto' });
-      }
-      const result = await bluetooth.connectBluetoothDevice(instanceId);
-      res.json(result);
-    } catch (err) {
-      res.status(500).json({ error: err.message });
-    }
-  });
-
-  app.post("/bluetooth/disconnect", express.json(), async (req, res) => {
-    try {
-      const { instanceId } = req.body;
-      if (!instanceId) {
-        return res.status(400).json({ error: 'instanceId richiesto' });
-      }
-      const result = await bluetooth.disconnectBluetoothDevice(instanceId);
-      res.json(result);
-    } catch (err) {
-      res.status(500).json({ error: err.message });
-    }
-  });
-
-  app.post("/bluetooth/remove", express.json(), async (req, res) => {
-    try {
-      const { instanceId } = req.body;
-      if (!instanceId) {
-        return res.status(400).json({ error: 'instanceId richiesto' });
-      }
-      const result = await bluetooth.removeBluetoothDevice(instanceId);
-      res.json(result);
-    } catch (err) {
-      res.status(500).json({ error: err.message });
-    }
-  });
-
-  app.post("/bluetooth/pair", express.json(), async (req, res) => {
-    try {
-      const { name } = req.body;
-      if (!name) return res.status(400).json({ error: 'nome dispositivo richiesto' });
-      const result = await bluetooth.pairBluetoothDevice(name);
-      res.json(result);
-    } catch (err) {
-      res.status(500).json({ error: err.message });
-    }
-  });
+ 
 
   // Volume endpoints
   app.get("/volume/get", async (req, res) => {
@@ -170,6 +112,10 @@ function start(port, handlers, config) {
     // IPTV: send to main window to play channel
     socket.on("playIPTV", (data) => {
       handlers.onPlayIPTV(data);
+    });
+
+    socket.on("remoteMouse", (action) => {
+      if (typeof handlers.onRemoteMouse === "function") handlers.onRemoteMouse(action || {});
     });
     
     // Remote command to close IPTV overlay (useful for kiosk without keyboard)

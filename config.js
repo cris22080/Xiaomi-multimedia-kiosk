@@ -149,6 +149,8 @@ module.exports = {
         name: "Sport",
         icon: "⚽",
         channels: [
+          { name: "F1Net", url: "https://f1net.dpdns.org/stream", type: "web" },
+          { name: "RSI La 2", url: "https://srgssrch.akamaized.net/hls/live/2022155/srgssr-hls-stream22-ch-dvr/master.m3u8" },
           { name: "Sportitalia Plus", url: "https://sportsitalia-samsungitaly.amagi.tv/playlist.m3u8" },
           { name: "Sportitalia SOLOCALCIO", url: "https://di-g7ij0rwh.vo.lswcdn.net/sportitalia/sisolocalcio.smil/playlist.m3u8" },
           { name: "Sportitalia LIVE24", url: "https://di-g7ij0rwh.vo.lswcdn.net/sportitalia/silive24.smil/playlist.m3u8" },
@@ -207,6 +209,7 @@ module.exports = {
           { name: "Canale Europa", url: "https://canaleeuropa-canaleeuropa-1-it.samsung.wurl.tv/playlist.m3u8" }
         ]
       },
+     
       {
         name: "Locali e Regionali",
         icon: "🏘️",

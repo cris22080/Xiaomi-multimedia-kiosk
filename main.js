@@ -12,12 +12,14 @@ const screenControl = require("./modules/screenControl");
 const network = require("./modules/network");
 const remoteServer = require("./modules/remoteServer");
 const spotify = require("./modules/spotify");
-const bluetooth = require("./modules/bluetooth");
+const windowsVolume = require("./modules/windowsVolume");
+
 const alarmManager = require("./modules/alarmManager");
 
 let mainWindow = null;
 let allowQuit = false; // true solo dopo il comando remoto di chiusura
 let spotifyPollTimer = null;
+let remoteCursor = { x: 0, y: 0 };
 
 Menu.setApplicationMenu(null);
 
@@ -140,6 +142,24 @@ app.whenReady().then(() => {
       mainWindow.webContents.send("nav:goto", "iptv");
       mainWindow.webContents.send("iptv:play", data);
     },
+    onRemoteMouse: (action) => {
+      if (!mainWindow || mainWindow.isDestroyed()) return;
+      const bounds = mainWindow.getContentBounds();
+      if (!remoteCursor.x && !remoteCursor.y) {
+        remoteCursor = { x: Math.round(bounds.width / 2), y: Math.round(bounds.height / 2) };
+      }
+      const step = action && action.large ? 90 : 35;
+      if (action && action.type === "move") {
+        remoteCursor.x = Math.max(0, Math.min(bounds.width - 1, remoteCursor.x + (Number(action.dx) || 0) * step));
+        remoteCursor.y = Math.max(0, Math.min(bounds.height - 1, remoteCursor.y + (Number(action.dy) || 0) * step));
+        mainWindow.webContents.sendInputEvent({ type: "mouseMove", x: remoteCursor.x, y: remoteCursor.y });
+      } else if (action && action.type === "click") {
+        mainWindow.webContents.sendInputEvent({ type: "mouseDown", x: remoteCursor.x, y: remoteCursor.y, button: "left", clickCount: 1 });
+        mainWindow.webContents.sendInputEvent({ type: "mouseUp", x: remoteCursor.x, y: remoteCursor.y, button: "left", clickCount: 1 });
+      } else if (action && action.type === "scroll") {
+        mainWindow.webContents.sendInputEvent({ type: "mouseWheel", x: remoteCursor.x, y: remoteCursor.y, deltaX: 0, deltaY: (Number(action.dy) || 0) * 120 });
+      }
+    },
     // Remote request to close IPTV overlay and return to home (kiosk remains fullscreen)
     onCloseIPTV: () => {
       if (mainWindow) mainWindow.webContents.send("nav:goto", "home");
@@ -159,6 +179,7 @@ app.whenReady().then(() => {
     },
     // Volume handlers for remote
     onGetVolume: async () => {
+      return windowsVolume.get();
       const { exec } = require('child_process');
       const util = require('util');
       const execPromise = util.promisify(exec);
@@ -203,6 +224,7 @@ app.whenReady().then(() => {
       }
     },
     onSetVolume: async (level) => {
+      return windowsVolume.set(level);
       const { exec } = require('child_process');
       const util = require('util');
       const execPromise = util.promisify(exec);
@@ -309,24 +331,10 @@ app.whenReady().then(() => {
   });
 
   // --- Bluetooth IPC ---
-  ipcMain.handle("bluetooth:getDevices", async () => {
-    return await bluetooth.getBluetoothDevices();
-  });
-
-  ipcMain.handle("bluetooth:connect", async (_e, instanceId) => {
-    return await bluetooth.connectBluetoothDevice(instanceId);
-  });
-
-  ipcMain.handle("bluetooth:disconnect", async (_e, instanceId) => {
-    return await bluetooth.disconnectBluetoothDevice(instanceId);
-  });
-
-  ipcMain.handle("bluetooth:remove", async (_e, instanceId) => {
-    return await bluetooth.removeBluetoothDevice(instanceId);
-  });
-
+ 
   // --- Volume Control IPC ---
   ipcMain.handle("volume:set", async (_e, level) => {
+    return windowsVolume.set(level);
     try {
       // Use Windows Audio Session API via PowerShell
       const { exec } = require('child_process');
@@ -375,6 +383,7 @@ app.whenReady().then(() => {
   });
 
   ipcMain.handle("volume:get", async () => {
+    return windowsVolume.get();
     try {
       const { exec } = require('child_process');
       const util = require('util');

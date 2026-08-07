@@ -34,6 +34,10 @@
                  background:rgba(255,255,255,.065); border:1px solid transparent; border-radius:11px; cursor:pointer; color:#fff;
                  font-size:14px; transition:all .15s; border-left:3px solid transparent; }
   .channel-btn.playing { background:rgba(91,225,187,.14); border-left-color:var(--mint); }
+  .mouse-pad { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; width:min(100%,270px); margin:0 auto; }
+  .mouse-pad .btn { margin:0; min-height:54px; font-size:20px; }
+  .mouse-pad .mouse-click { background:var(--yellow); font-size:13px; }
+  .mouse-help { margin:12px 0 0; color:var(--quiet); text-align:center; font:800 10px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace; }
   
   /* Volume Control */
   .volume-control { display:flex; align-items:center; gap:12px; margin:4px 0 14px; padding:14px; border-radius:16px; background:rgba(0,0,0,.14); }
@@ -43,22 +47,12 @@
   .volume-label { min-width:42px; text-align:right; font-size:15px; font-weight:750; }
   .volume-icon { font-size:21px; }
   
-  /* Bluetooth */
-  .bluetooth-device { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px; margin:10px 0; background:rgba(0,0,0,.15); border:1px solid var(--line); border-radius:16px; }
-  .bluetooth-device-info { display:flex; flex-direction:column; gap:4px; }
-  .bluetooth-device-name { font-weight:600; font-size:14px; }
-  .bluetooth-device-status { font-size:12px; opacity:.7; }
-  .bluetooth-device-status.connected { color:#4ade80; }
-  .bluetooth-device-status.disconnected { color:#f87171; }
-  .bluetooth-device-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:6px; }
-  .bluetooth-device-actions .btn { min-height:36px; padding:7px 9px; font-size:11px; margin:0; width:auto; border-radius:10px; }
-  
   .refresh-btn { background:#3a3f4a; margin-top:12px; }
   .refresh-btn:hover { background:#4a4f5a; }
   
   .empty-state { text-align:center; color:var(--muted); padding:20px; font-size:13px; }
   
-  @media (max-width:380px) { .container { padding-inline:12px; } .section { padding:14px; } .bluetooth-device { align-items:flex-start; flex-direction:column; } .bluetooth-device-actions { justify-content:flex-start; } }
+  @media (max-width:380px) { .container { padding-inline:12px; } .section { padding:14px; } }
 
   /* Visual identity: tactile editorial remote, optimised for a one-handed phone view. */
   :root { color-scheme:light; --ink:#17251f; --paper:#f4efe6; --cream:#fffaf1; --orange:#ee6434; --yellow:#ffc72c; --green:#2e9c73; --line:#1b2c25; --quiet:#65736b; }
@@ -91,12 +85,6 @@
   .category-title-arrow { color:var(--orange); }
   .channel-btn { padding:13px; border:1px solid rgba(23,37,31,.2); border-left:5px solid var(--yellow); border-radius:5px; background:#fffaf1; color:var(--ink); font-size:13px; font-weight:700; }
   .channel-btn.playing { background:var(--green); color:#fff; border-left-color:var(--ink); }
-  .bluetooth-device { align-items:flex-start; padding:13px; border:2px solid var(--line); border-radius:7px; background:#fffdf7; }
-  .bluetooth-device-name { color:var(--ink); font-family:Georgia,"Times New Roman",serif; font-size:17px; line-height:1.05; }
-  .bluetooth-device-status { color:var(--quiet); font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:10px; font-weight:800; }
-  .bluetooth-device-status.connected { color:var(--green); }
-  .bluetooth-device-status.disconnected { color:#bb4030; }
-  .bluetooth-device-actions .btn { min-height:34px; padding:6px 8px; border-width:1px; border-radius:4px; box-shadow:2px 2px 0 var(--line); font-size:10px; }
   .empty-state { color:var(--quiet); font-family:ui-monospace,SFMono-Regular,Consolas,monospace; }
   .status { bottom:15px; color:var(--cream); border:2px solid var(--ink); border-radius:5px; background:var(--ink); box-shadow:3px 3px 0 var(--orange); font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:10px; letter-spacing:.4px; }
   .status.offline { color:#fff; border-color:#7c241f; background:#a3372c; }
@@ -171,16 +159,20 @@
     </div>
 
     <div class="section">
-      <h2>🎵 Spotify</h2>
-      <button class="btn" id="spotifyToggle">Carica playlist</button>
-      <div id="spotifyPlaylists" style="margin-top:10px;display:none;"></div>
+      <h2>Mouse remoto</h2>
+      <div class="mouse-pad">
+        <span></span><button class="btn" data-mouse="up" aria-label="Su">▲</button><span></span>
+        <button class="btn" data-mouse="left" aria-label="Sinistra">◀</button><button class="btn mouse-click" data-mouse="click">CLIC</button><button class="btn" data-mouse="right" aria-label="Destra">▶</button>
+        <span></span><button class="btn" data-mouse="down" aria-label="Giù">▼</button><span></span>
+        <button class="btn" data-mouse="scrollUp" aria-label="Scorri su">⇡</button><button class="btn mouse-click" data-mouse="large">PASSO +</button><button class="btn" data-mouse="scrollDown" aria-label="Scorri giù">⇣</button>
+      </div>
+      <p class="mouse-help">Tieni premuta una freccia per muovere il cursore. “Passo +” aumenta la distanza del movimento.</p>
     </div>
 
     <div class="section">
-      <h2>📱 Bluetooth</h2>
-      <button class="btn refresh-btn" id="bluetoothRefresh">🔄 Aggiorna dispositivi</button>
-      <button class="btn" id="bluetoothPairSrs" style="margin-top:8px;">Associa SRS-XB23</button>
-      <div id="bluetoothDevices"></div>
+      <h2>🎵 Spotify</h2>
+      <button class="btn" id="spotifyToggle">Carica playlist</button>
+      <div id="spotifyPlaylists" style="margin-top:10px;display:none;"></div>
     </div>
 
     <button class="btn danger" id="shutdownApp">⛔ Chiudi applicazione</button>
@@ -201,11 +193,11 @@
     const socket = io();
     const statusEl = document.getElementById("status");
     const iptvCategoriesEl = document.getElementById("iptvCategories");
-    const bluetoothDevicesEl = document.getElementById("bluetoothDevices");
     
     let currentVolume = 100;
     let isMuted = false;
     let currentPlayingChannel = null;
+    let mouseLargeStep = false;
 
     socket.on("connect", () => {
       statusEl.textContent = "✅ connesso";
@@ -239,7 +231,7 @@
             </div>
             <div class="category-content" id="category-${catIndex}">
               ${(cat.channels || []).map(ch => `
-                <button class="channel-btn" onclick="playChannel('${ch.url.replace(/'/g, "\\'")}', '${(cat.name + " - " + ch.name).replace(/'/g, "\\'")}', this)">${ch.name}</button>
+                <button class="channel-btn" onclick="playChannel('${ch.url.replace(/'/g, "\\'")}', '${(cat.name + " - " + ch.name).replace(/'/g, "\\'")}', '${ch.type || "hls"}', this)">${ch.name}</button>
               `).join("")}
             </div>
           </div>
@@ -259,14 +251,52 @@
       }
     };
 
-    window.playChannel = (url, name, btnElement) => {
+    window.playChannel = (url, name, type, btnElement) => {
       // Update UI to show playing state
       document.querySelectorAll('.channel-btn').forEach(btn => btn.classList.remove('playing'));
       if (btnElement) btnElement.classList.add('playing');
       currentPlayingChannel = name;
       
-      socket.emit("playIPTV", { url, name });
+      socket.emit("playIPTV", { url, name, type });
     };
+
+    function sendMouseCommand(command) {
+      const commands = {
+        up: { type: "move", dx: 0, dy: -1 },
+        down: { type: "move", dx: 0, dy: 1 },
+        left: { type: "move", dx: -1, dy: 0 },
+        right: { type: "move", dx: 1, dy: 0 },
+        click: { type: "click" },
+        scrollUp: { type: "scroll", dy: 1 },
+        scrollDown: { type: "scroll", dy: -1 }
+      };
+      if (command === "large") {
+        mouseLargeStep = !mouseLargeStep;
+        document.querySelector('[data-mouse="large"]').classList.toggle("active", mouseLargeStep);
+        return;
+      }
+      if (commands[command]) socket.emit("remoteMouse", { ...commands[command], large: mouseLargeStep });
+    }
+
+    document.querySelectorAll("[data-mouse]").forEach((button) => {
+      const command = button.dataset.mouse;
+      let repeatTimer = null;
+      const start = (event) => {
+        event.preventDefault();
+        sendMouseCommand(command);
+        if (["up", "down", "left", "right"].includes(command)) {
+          repeatTimer = setInterval(() => sendMouseCommand(command), 110);
+        }
+      };
+      const stop = () => {
+        if (repeatTimer) clearInterval(repeatTimer);
+        repeatTimer = null;
+      };
+      button.addEventListener("pointerdown", start);
+      button.addEventListener("pointerup", stop);
+      button.addEventListener("pointercancel", stop);
+      button.addEventListener("pointerleave", stop);
+    });
 
     document.getElementById("cozyOn").onclick = () => socket.emit("toggleCozy", true);
     document.getElementById("cozyOff").onclick = () => socket.emit("toggleCozy", false);
@@ -464,164 +494,6 @@
       remoteAlarmStop.style.display = state.activeAlarm ? "block" : "none";
     });
 
-    // Bluetooth Management
-    function renderBluetoothDevices(devices) {
-      // InstanceId contiene barre inverse: conservarlo in una closure evita che
-      // JavaScript lo modifichi come accadeva con gli attributi onclick.
-      bluetoothDevicesEl.replaceChildren(...devices.map((device) => {
-        const row = document.createElement('div');
-        row.className = 'bluetooth-device';
-        row.dataset.instanceId = device.instanceId;
-
-        const info = document.createElement('div');
-        info.className = 'bluetooth-device-info';
-        const name = document.createElement('span');
-        name.className = 'bluetooth-device-name';
-        name.textContent = device.name;
-        const status = document.createElement('span');
-        const available = device.status === 'OK';
-        status.className = `bluetooth-device-status ${available ? 'connected' : 'disconnected'}`;
-        status.textContent = available ? '🟢 Disponibile' : '🔴 Non disponibile';
-        info.append(name, status);
-
-        const actions = document.createElement('div');
-        actions.className = 'bluetooth-device-actions';
-        const connect = document.createElement('button');
-        connect.className = 'btn secondary';
-        connect.textContent = 'Connetti';
-        connect.addEventListener('click', () => window.connectBluetooth(device.instanceId, connect));
-        const disconnect = document.createElement('button');
-        disconnect.className = 'btn secondary';
-        disconnect.textContent = 'Disconnetti';
-        disconnect.addEventListener('click', () => window.disconnectBluetooth(device.instanceId, disconnect));
-        const remove = document.createElement('button');
-        remove.className = 'btn danger';
-        remove.style.cssText = 'margin:0;padding:8px 10px;font-size:11px;';
-        remove.textContent = 'Rimuovi';
-        remove.addEventListener('click', () => window.removeBluetooth(device.instanceId, remove));
-        actions.append(connect, disconnect, remove);
-        row.append(info, actions);
-        return row;
-      }));
-    }
-
-    async function loadBluetoothDevices() {
-      bluetoothDevicesEl.innerHTML = '<div class="empty-state">Caricamento dispositivi...</div>';
-      try {
-        const response = await fetch("/bluetooth/devices");
-        const devices = await response.json();
-        
-        if (devices.length === 0) {
-          bluetoothDevicesEl.innerHTML = '<div class="empty-state">Nessun dispositivo Bluetooth trovato</div>';
-          return;
-        }
-        
-        renderBluetoothDevices(devices);
-        return;
-        bluetoothDevicesEl.innerHTML = devices.map(device => `
-          <div class="bluetooth-device" data-instance-id="${device.instanceId}">
-            <div class="bluetooth-device-info">
-              <span class="bluetooth-device-name">${device.name}</span>
-              <span class="bluetooth-device-status ${device.status === 'OK' ? 'connected' : 'disconnected'}">
-                ${device.status === 'OK' ? '🟢 Connesso' : '🔴 Disconnesso'}
-              </span>
-            </div>
-            <div class="bluetooth-device-actions">
-              <button class="btn secondary" onclick="connectBluetooth('${device.instanceId.replace(/'/g, "\\'")}', this)">Connetti</button>
-              <button class="btn secondary" onclick="disconnectBluetooth('${device.instanceId.replace(/'/g, "\\'")}', this)">Disconnetti</button>
-              <button class="btn danger" onclick="removeBluetooth('${device.instanceId.replace(/'/g, "\\'")}', this)" style="margin:0;padding:8px 10px;font-size:11px;">Rimuovi</button>
-            </div>
-          </div>
-        `).join("");
-      } catch (err) {
-        console.error("Errore caricamento Bluetooth:", err);
-        bluetoothDevicesEl.innerHTML = '<div class="empty-state">Errore nel caricamento dei dispositivi</div>';
-      }
-    }
-
-    window.connectBluetooth = async (instanceId, btn) => {
-      btn.disabled = true;
-      btn.textContent = "Connessione...";
-      try {
-        const response = await fetch("/bluetooth/connect", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ instanceId })
-        });
-        const data = await response.json();
-        alert(data.message || (data.success ? "Connesso!" : "Errore connessione"));
-        loadBluetoothDevices();
-      } catch (err) {
-        alert("Errore: " + err.message);
-      } finally {
-        btn.disabled = false;
-        btn.textContent = "Connetti";
-      }
-    };
-
-    window.disconnectBluetooth = async (instanceId, btn) => {
-      btn.disabled = true;
-      btn.textContent = "Disconnessione...";
-      try {
-        const response = await fetch("/bluetooth/disconnect", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ instanceId })
-        });
-        const data = await response.json();
-        alert(data.message || (data.success ? "Disconnesso!" : "Errore disconnessione"));
-        loadBluetoothDevices();
-      } catch (err) {
-        alert("Errore: " + err.message);
-      } finally {
-        btn.disabled = false;
-        btn.textContent = "Disconnetti";
-      }
-    };
-
-    window.removeBluetooth = async (instanceId, btn) => {
-      if (!confirm("Rimuovere definitivamente questo dispositivo Bluetooth?")) return;
-      btn.disabled = true;
-      btn.textContent = "Rimozione...";
-      try {
-        const response = await fetch("/bluetooth/remove", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ instanceId })
-        });
-        const data = await response.json();
-        alert(data.message || (data.success ? "Rimosso!" : "Errore rimozione"));
-        loadBluetoothDevices();
-      } catch (err) {
-        alert("Errore: " + err.message);
-      } finally {
-        btn.disabled = false;
-        btn.textContent = "Rimuovi";
-      }
-    };
-
-    document.getElementById("bluetoothRefresh").onclick = loadBluetoothDevices;
-    document.getElementById("bluetoothPairSrs").onclick = async (event) => {
-      const button = event.currentTarget;
-      button.disabled = true;
-      button.textContent = "Ricerca SRS-XB23...";
-      try {
-        const response = await fetch("/bluetooth/pair", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: "SRS-XB23" })
-        });
-        const data = await response.json();
-        alert(data.message || (data.success ? "SRS-XB23 associato" : "Associazione non riuscita"));
-        loadBluetoothDevices();
-      } catch (err) {
-        alert("Errore associazione: " + err.message);
-      } finally {
-        button.disabled = false;
-        button.textContent = "Associa SRS-XB23";
-      }
-    };
-
     document.getElementById("shutdownApp").onclick = () => {
       if (confirm("Chiudere l'app? Non potrai riaprirla da qui.")) {
         socket.emit("shutdownApp");
@@ -631,7 +503,7 @@
     // Initialize
     initVolume();
     loadAlarms();
-    loadBluetoothDevices();
+   
   </script>
 </body>
 </html>
