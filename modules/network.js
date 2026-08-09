@@ -8,11 +8,12 @@ const dns = require("dns");
 
 let online = true;
 let watchdogTimer = null;
+let hasChecked = false;
 
 function checkOnce() {
   return new Promise((resolve) => {
-    dns.resolve("1.1.1.1", (err) => {
-      resolve(!err);
+    dns.resolve4("one.one.one.one", (err, addresses) => {
+      resolve(!err && Array.isArray(addresses) && addresses.length > 0);
     });
   });
 }
@@ -20,8 +21,9 @@ function checkOnce() {
 function startWatchdog(onChange, intervalMs = 10000) {
   async function tick() {
     const nowOnline = await checkOnce();
-    if (nowOnline !== online) {
+    if (!hasChecked || nowOnline !== online) {
       online = nowOnline;
+      hasChecked = true;
       onChange({ online, timestamp: Date.now() });
     }
     watchdogTimer = setTimeout(tick, intervalMs);

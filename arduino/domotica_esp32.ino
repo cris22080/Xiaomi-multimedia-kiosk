@@ -9446,40 +9446,67 @@ String tuyaGetToken() {
   String t = String(tbuf); String method = "GET"; String url = "/v1.0/token?grant_type=1"; String body = "";
   String sign = tuyaBuildSign("", t, "", method, url, body);
   WiFiClientSecure client; client.setInsecure();
-  HTTPClient http; http.begin(client, String(TUYA_BASE_URL) + url);
+  HTTPClient http; http.setTimeout(10000); http.begin(client, String(TUYA_BASE_URL) + url);
   http.addHeader("client_id", TUYA_CLIENT_ID); http.addHeader("sign", sign); http.addHeader("t", t); http.addHeader("sign_method", "HMAC-SHA256");
   int httpCode = http.GET(); String payload = http.getString(); http.end();
-  DynamicJsonDocument doc(512); deserializeJson(doc, payload);
+  DynamicJsonDocument doc(768);
+  DeserializationError jsonError = deserializeJson(doc, payload);
+  if (httpCode != 200 || jsonError) {
+    Serial.printf("[Tuya] Token fallito: HTTP %d, JSON %s, heap %u\n", httpCode, jsonError.c_str(), ESP.getFreeHeap());
+    Serial.println(payload);
+    return "";
+  }
   if (doc["success"].as<bool>()) {
     tuyaAccessToken = doc["result"]["access_token"].as<String>();
     long expiresIn = doc["result"]["expire_time"].as<long>();
     tokenExpiryMs = nowMs + (unsigned long long)expiresIn * 1000ULL - 60000ULL;
     return tuyaAccessToken;
   }
+  Serial.printf("[Tuya] Token rifiutato: code=%s msg=%s\n", doc["code"] | "?", doc["msg"] | "errore sconosciuto");
   return "";
 }
 
 bool tuyaSendCommand(const String& jsonBody) {
-  String token = tuyaGetToken();
-  if (token == "") return false;
-  struct timeval tv; gettimeofday(&tv, NULL);
-  unsigned long long nowMs = (unsigned long long)tv.tv_sec * 1000ULL + (unsigned long long)tv.tv_usec / 1000ULL;
-  char tbuf[20]; snprintf(tbuf, sizeof(tbuf), "%llu", nowMs);
-  String t = String(tbuf); String method = "POST"; String url = "/v1.0/devices/" + String(TUYA_DEVICE_ID) + "/commands";
-  String sign = tuyaBuildSign(token, t, "", method, url, jsonBody);
-  WiFiClientSecure client; client.setInsecure();
-  HTTPClient http; http.begin(client, String(TUYA_BASE_URL) + url);
-  http.addHeader("client_id", TUYA_CLIENT_ID); http.addHeader("access_token", token); http.addHeader("sign", sign); http.addHeader("t", t); http.addHeader("sign_method", "HMAC-SHA256"); http.addHeader("Content-Type", "application/json");
-  int httpCode = http.POST(jsonBody); http.end();
-  return (httpCode == 200);
+  for (int attempt = 0; attempt < 2; attempt++) {
+    String token = tuyaGetToken();
+    if (token == "") return false;
+    struct timeval tv; gettimeofday(&tv, NULL);
+    unsigned long long nowMs = (unsigned long long)tv.tv_sec * 1000ULL + (unsigned long long)tv.tv_usec / 1000ULL;
+    char tbuf[20]; snprintf(tbuf, sizeof(tbuf), "%llu", nowMs);
+    String t = String(tbuf); String method = "POST"; String url = "/v1.0/devices/" + String(TUYA_DEVICE_ID) + "/commands";
+    String sign = tuyaBuildSign(token, t, "", method, url, jsonBody);
+    WiFiClientSecure client; client.setInsecure();
+    HTTPClient http; http.setTimeout(10000); http.begin(client, String(TUYA_BASE_URL) + url);
+    http.addHeader("client_id", TUYA_CLIENT_ID); http.addHeader("access_token", token); http.addHeader("sign", sign); http.addHeader("t", t); http.addHeader("sign_method", "HMAC-SHA256"); http.addHeader("Content-Type", "application/json");
+    int httpCode = http.POST(jsonBody);
+    String payload = http.getString();
+    http.end();
+
+    DynamicJsonDocument doc(768);
+    DeserializationError jsonError = deserializeJson(doc, payload);
+    bool success = httpCode == 200 && !jsonError && doc["success"].as<bool>();
+    if (success) {
+      Serial.printf("[Tuya] Comando riuscito, heap %u\n", ESP.getFreeHeap());
+      return true;
+    }
+
+    Serial.printf("[Tuya] Comando fallito (tentativo %d): HTTP %d, code=%s, msg=%s, heap %u\n",
+      attempt + 1, httpCode, doc["code"] | "?", doc["msg"] | "risposta non valida", ESP.getFreeHeap());
+    Serial.println(payload);
+    tuyaAccessToken = "";
+    tokenExpiryMs = 0;
+  }
+  return false;
 }
 
 // ------------------------------------------------------------
 // CONTROLLO LUCE SMART
 // ------------------------------------------------------------
-void lampadaToggle() {
-  lampadaAccesa = !lampadaAccesa;
-  tuyaSendCommand("{\"commands\":[{\"code\":\"switch_led\",\"value\":" + String(lampadaAccesa ? "true" : "false") + "}]}");
+bool lampadaToggle() {
+  bool nuovoStato = !lampadaAccesa;
+  bool success = tuyaSendCommand("{\"commands\":[{\"code\":\"switch_led\",\"value\":" + String(nuovoStato ? "true" : "false") + "}]}");
+  if (success) lampadaAccesa = nuovoStato;
+  return success;
 }
 
 void lampadaSetBrightness(int val) {
@@ -9541,6 +9568,7 @@ void controllaOrario() {
 // ============================================================
 String generaHTML() {
   String pg = "<!DOCTYPE html><html lang='it'><head>";
+  pg.reserve(18000);
   pg += "<meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1'>";
   pg += "<title>Casa</title><style>";
   pg += "*{box-sizing:border-box;margin:0;padding:0}html{min-height:100%}body{min-height:100vh;font-family:Inter,'Segoe UI',sans-serif;background:radial-gradient(circle at 8% 4%,#1b665955 0,transparent 30%),radial-gradient(circle at 94% 2%,#604ad966 0,transparent 34%),linear-gradient(145deg,#07101f,#0b1224 55%,#10172e);background-attachment:fixed;color:#f4f8ff;padding-bottom:44px}";

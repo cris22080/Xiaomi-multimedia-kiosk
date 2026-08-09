@@ -241,7 +241,7 @@
     </div>
 
     <div id="content">
-      <span id="netPill">rete: ok</span>
+      <span id="netPill">internet: verifica...</span>
 
       <!-- HOME -->
       <div id="view-home" class="view active">
@@ -755,10 +755,10 @@
     window.cozyDesk.onNetworkStatus((status) => {
       const pill = document.getElementById("netPill");
       if (status.online) {
-        pill.textContent = "rete: connessa";
+        pill.textContent = "internet: connesso";
         pill.classList.remove("offline");
       } else {
-        pill.textContent = "rete: offline";
+        pill.textContent = "internet: assente";
         pill.classList.add("offline");
       }
     });

@@ -244,23 +244,21 @@
     let mouseLargeStep = false;
 
     socket.on("connect", () => {
-      statusEl.textContent = "✅ connesso";
+      statusEl.textContent = "✅ telecomando connesso";
       statusEl.classList.remove("offline");
     });
     
     socket.on("disconnect", () => {
-      statusEl.textContent = "❌ offline";
+      statusEl.textContent = "❌ telecomando scollegato";
       statusEl.classList.add("offline");
     });
     
     socket.on("state", (s) => {
-      if (s.online) {
-        statusEl.textContent = "✅ online";
-        statusEl.classList.remove("offline");
-      } else {
-        statusEl.textContent = "❌ offline";
-        statusEl.classList.add("offline");
-      }
+      if (!socket.connected) return;
+      statusEl.textContent = s.online
+        ? "✅ telecomando • internet ok"
+        : "✅ telecomando • internet assente";
+      statusEl.classList.remove("offline");
     });
 
     // Load IPTV categories with dropdowns
