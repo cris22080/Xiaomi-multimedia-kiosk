@@ -194,6 +194,7 @@
 </style>
 </head>
 <body>
+  <div id="softScreenOff" aria-hidden="true" style="display:none;position:fixed;inset:0;z-index:2147483647;background:#000;cursor:none;"></div>
   <div id="app">
     <div id="sidebar">
       <button class="nav-btn active" data-view="home">🏠</button>
@@ -328,6 +329,11 @@
   </div>
 
   <script>
+    const softScreenOff = document.getElementById("softScreenOff");
+    window.cozyDesk.onSoftScreenPower((on) => {
+      softScreenOff.style.display = on ? "none" : "block";
+    });
+
     // ---------- Navigazione tra schermate ----------
     const views = ["home", "cozy", "iptv", "spotify", "alarm"];
     function goTo(view) {

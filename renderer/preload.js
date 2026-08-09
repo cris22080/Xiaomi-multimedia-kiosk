@@ -15,6 +15,7 @@ contextBridge.exposeInMainWorld("cozyDesk", {
 
   // Schermo
   setScreenPower: (on) => ipcRenderer.send("ui:setScreenPower", on),
+  onSoftScreenPower: (cb) => ipcRenderer.on("screen:softPower", (_e, on) => cb(Boolean(on))),
   // Request main process to put the app window into OS fullscreen (kiosk) or exit it
   setAppFullscreen: (on) => ipcRenderer.invoke("ui:setAppFullscreen", on),
   // Get a local cozy-media video file path (file://...) or null if none

@@ -1,7 +1,7 @@
 // modules/screenControl.js
-// Accende/spegne SOLO il monitor su Windows, lasciando il PC acceso e attivo.
-// Per spegnere: WM_SYSCOMMAND / SC_MONITORPOWER
-// Per riaccendere: combinazione di mouse movement + SetThreadExecutionState + input simulation
+// Lo spegnimento hardware usa SC_MONITORPOWER. Il processo principale mantiene
+// Windows e la rete attivi tramite Electron powerSaveBlocker; l'overlay nero del
+// renderer resta come fallback nel caso il driver non spenga il pannello.
 
 const { spawn } = require("child_process");
 
@@ -35,7 +35,7 @@ public class Native {
   public const int SC_MONITORPOWER = 0xF170;
 }
 "@
-[Native]::PostMessage([Native]::HWND_BROADCAST, [Native]::WM_SYSCOMMAND, [IntPtr]::new(0xF170), [IntPtr]::new(2))
+[Native]::PostMessage([Native]::HWND_BROADCAST, [Native]::WM_SYSCOMMAND, [IntPtr]::new(0xF170), [IntPtr]::new(2)) | Out-Null
 Start-Sleep -Milliseconds 100
 `.trim();
 
@@ -138,13 +138,15 @@ function isWithinSchedule(onFrom, onTo) {
   return nowMin >= from || nowMin < to;
 }
 
-function startScheduler(cfg) {
+function startScheduler(cfg, onStateChange) {
   if (!cfg.enabled) return;
 
   function tick() {
     const shouldBeOn = isWithinSchedule(cfg.onFrom, cfg.onTo);
     if (shouldBeOn !== lastState) {
-      setScreenPower(shouldBeOn).catch(() => {});
+      setScreenPower(shouldBeOn).then(() => {
+        if (typeof onStateChange === "function") onStateChange(shouldBeOn);
+      }).catch(() => {});
     }
   }
 

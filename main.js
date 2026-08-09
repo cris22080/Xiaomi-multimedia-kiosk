@@ -3,7 +3,7 @@
 // mostra "schermate" diverse (Home, Cozy View, Spotify) gestite lato
 // renderer. Nessuna finestra popup separata.
 
-const { app, BrowserWindow, ipcMain, screen, Menu, shell } = require("electron");
+const { app, BrowserWindow, ipcMain, screen, Menu, shell, powerSaveBlocker } = require("electron");
 const path = require("path");
 
 const config = require("./config");
@@ -20,6 +20,8 @@ let mainWindow = null;
 let allowQuit = false; // true solo dopo il comando remoto di chiusura
 let spotifyPollTimer = null;
 let remoteCursor = { x: 0, y: 0 };
+let softScreenOn = true;
+let suspensionBlockerId = null;
 
 Menu.setApplicationMenu(null);
 
@@ -68,6 +70,9 @@ function createMainWindow() {
     if (isBlocked) e.preventDefault();
   });
 
+  mainWindow.webContents.on("did-finish-load", () => {
+    mainWindow.webContents.send("screen:softPower", softScreenOn);
+  });
   mainWindow.loadFile(path.join(__dirname, "renderer", "index.html"));
 }
 
@@ -100,6 +105,10 @@ function stopSpotifyPolling() {
 }
 
 app.whenReady().then(() => {
+  // Mantiene processo, rete e telecomando attivi anche quando il pannello viene
+  // spento tramite SC_MONITORPOWER (importante sui dispositivi Modern Standby).
+  suspensionBlockerId = powerSaveBlocker.start("prevent-app-suspension");
+  console.log(`[power] blocco sospensione attivo: ${powerSaveBlocker.isStarted(suspensionBlockerId)}`);
   createMainWindow();
 
   // --- Arduino: polling dati via WiFi/HTTP ---
@@ -112,7 +121,10 @@ app.whenReady().then(() => {
   });
 
   // --- Accensione/spegnimento schermo su orario ---
-  screenControl.startScheduler(config.screenSchedule);
+  screenControl.startScheduler(config.screenSchedule, (on) => {
+    softScreenOn = on;
+    if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send("screen:softPower", on);
+  });
 
   // --- Watchdog di rete: riconnessione automatica ---
   network.startWatchdog((status) => {
@@ -131,7 +143,11 @@ app.whenReady().then(() => {
       if (mainWindow && show) mainWindow.setFullScreen(true);
       mainWindow.webContents.send("nav:goto", show ? "cozy" : "home");
     },
-    onScreenPower: (on) => screenControl.setScreenPower(on),
+    onScreenPower: (on) => {
+      softScreenOn = Boolean(on);
+      if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send("screen:softPower", Boolean(on));
+      return screenControl.setScreenPower(Boolean(on));
+    },
     onShutdownApp: () => shutdownFromRemote(),
     onSpotifyAuthenticated: () => {
       mainWindow.webContents.send("spotify:authenticated");
@@ -271,8 +287,10 @@ app.whenReady().then(() => {
   }, config.iptv);
 
   alarmManager.start((alarm) => {
+    softScreenOn = true;
     screenControl.setScreenPower(true);
     if (mainWindow) {
+      mainWindow.webContents.send("screen:softPower", true);
       mainWindow.setFullScreen(true);
       mainWindow.webContents.send("alarm:trigger", alarm);
     }
