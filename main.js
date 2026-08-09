@@ -105,9 +105,9 @@ function stopSpotifyPolling() {
 }
 
 app.whenReady().then(() => {
-  // Mantiene processo, rete e telecomando attivi anche quando il pannello viene
-  // spento tramite SC_MONITORPOWER (importante sui dispositivi Modern Standby).
-  suspensionBlockerId = powerSaveBlocker.start("prevent-app-suspension");
+  // Mantiene processo, rete e display logicamente attivi. La luminosità viene
+  // portata a zero da screenControl senza attivare Modern Standby sullo Xiaomi.
+  suspensionBlockerId = powerSaveBlocker.start("prevent-display-sleep");
   console.log(`[power] blocco sospensione attivo: ${powerSaveBlocker.isStarted(suspensionBlockerId)}`);
   createMainWindow();
 

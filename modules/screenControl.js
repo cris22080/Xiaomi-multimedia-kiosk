@@ -1,7 +1,8 @@
 // modules/screenControl.js
-// Lo spegnimento hardware usa SC_MONITORPOWER. Il processo principale mantiene
-// Windows e la rete attivi tramite Electron powerSaveBlocker; l'overlay nero del
-// renderer resta come fallback nel caso il driver non spenga il pannello.
+// Su alcuni tablet Xiaomi SC_MONITORPOWER attiva Modern Standby e spegne la rete.
+// Manteniamo quindi il display logicamente acceso, impostiamo la luminosità a 0
+// e usiamo l'overlay nero del renderer. Quando l'app torna visibile la
+// luminosità viene sempre impostata al 100%.
 
 const { spawn } = require("child_process");
 
@@ -24,19 +25,11 @@ function setScreenPower(on) {
 
 function sleepScreen() {
   const psScript = `
-Add-Type -TypeDefinition @"
-using System;
-using System.Runtime.InteropServices;
-public class Native {
-  [DllImport("user32.dll")]
-  public static extern IntPtr PostMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
-  public static readonly IntPtr HWND_BROADCAST = new IntPtr(0xffff);
-  public const int WM_SYSCOMMAND = 0x0112;
-  public const int SC_MONITORPOWER = 0xF170;
+$brightness = Get-CimInstance -Namespace root/WMI -ClassName WmiMonitorBrightness -ErrorAction SilentlyContinue | Select-Object -First 1
+if ($brightness) {
+  Get-CimInstance -Namespace root/WMI -ClassName WmiMonitorBrightnessMethods -ErrorAction SilentlyContinue |
+    ForEach-Object { Invoke-CimMethod -InputObject $_ -MethodName WmiSetBrightness -Arguments @{ Timeout = [uint32]0; Brightness = [byte]0 } | Out-Null }
 }
-"@
-[Native]::PostMessage([Native]::HWND_BROADCAST, [Native]::WM_SYSCOMMAND, [IntPtr]::new(0xF170), [IntPtr]::new(2)) | Out-Null
-Start-Sleep -Milliseconds 100
 `.trim();
 
   return executePS(psScript).then(() => {
@@ -45,10 +38,6 @@ Start-Sleep -Milliseconds 100
 }
 
 function wakeScreen() {
-  // Per riaccendere usa multipli metodi:
-  // 1. SetThreadExecutionState per prevenire sleep
-  // 2. Simula un click del mouse
-  // 3. Invia una keystroke
   const psScript = `
 Add-Type -TypeDefinition @"
 using System;
@@ -68,6 +57,9 @@ public class Native {
 
 # Prevent monitor sleep
 [Native]::SetThreadExecutionState([Native]::ES_CONTINUOUS -bor [Native]::ES_DISPLAY_REQUIRED) | Out-Null
+
+Get-CimInstance -Namespace root/WMI -ClassName WmiMonitorBrightnessMethods -ErrorAction SilentlyContinue |
+  ForEach-Object { Invoke-CimMethod -InputObject $_ -MethodName WmiSetBrightness -Arguments @{ Timeout = [uint32]0; Brightness = [byte]100 } | Out-Null }
 
 # Simulate mouse movement
 [Native]::mouse_event([Native]::MOUSEEVENTF_MOVE, 0, 0, 0, [IntPtr]::Zero)
@@ -110,7 +102,7 @@ function executePS(psScript) {
         return reject(new Error(stderr || stdout || `PowerShell exit code ${code}`));
       }
       console.log("[screenControl] operazione completata");
-      resolve();
+      resolve(stdout.trim());
     });
 
     ps.on("error", (err) => {
