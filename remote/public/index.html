@@ -150,6 +150,33 @@
     .section:has(#iptvCategories) { grid-column:span 2; }
   }
   @media (max-width:699px) { .container{display:block;padding:20px 14px 100px}.section{margin-top:16px}h1::after{font-size:8px} }
+
+  /* Dark skeuomorphic remote — responsive raised/inset control console. */
+  :root { color-scheme:dark;--ink:#eef3f8;--paper:#111722;--cream:#171f2c;--orange:#62dfd1;--yellow:#9b82ff;--green:#b8e86e;--line:rgba(255,255,255,.055);--quiet:#8995a5; }
+  body { background:radial-gradient(circle at 80% 5%,rgba(155,130,255,.07),transparent 28%),linear-gradient(145deg,#121925,#0e141e);color:var(--ink); }
+  body::before { display:none; }
+  .container { gap:clamp(20px,2vw,30px); }
+  h1::before { content:"Cozy Remote";color:#eef3f8;text-shadow:5px 5px 12px #080c13,-3px -3px 9px #2a3547; }
+  h1::after { border:0;border-radius:15px;background:#141b26;color:#62dfd1;box-shadow:inset 4px 4px 9px #090d14,inset -3px -3px 8px #283446; }
+  .section { border:0;border-radius:28px;background:#171f2c;box-shadow:13px 13px 28px #080c13,-7px -7px 20px #283345,inset 1px 1px 1px rgba(255,255,255,.045);backdrop-filter:none;padding:clamp(20px,2.2vw,30px); }
+  .section:nth-of-type(2n),.section:nth-of-type(3n) { background:#171f2c; }
+  h2 { color:#929dad; }
+  h2::after { background:linear-gradient(90deg,rgba(98,223,209,.3),transparent); }
+  .btn { border:0;border-radius:18px;background:linear-gradient(145deg,#1d2736,#131a25);color:#e6edf5;box-shadow:7px 7px 15px #090d14,-4px -4px 12px #293548,inset 1px 1px 1px rgba(255,255,255,.045); }
+  .btn:hover { border:0;background:linear-gradient(145deg,#202b3b,#141b27); }
+  .btn:active { transform:translateY(1px);box-shadow:inset 5px 5px 11px #090d14,inset -4px -4px 10px #283446; }
+  .btn.active,.action-grid .btn:last-child,.mouse-pad .mouse-click { background:#151d29;color:#62dfd1;box-shadow:inset 5px 5px 11px #090d14,inset -4px -4px 10px #293548,0 0 18px rgba(98,223,209,.07); }
+  .btn.secondary,.refresh-btn { background:linear-gradient(145deg,#1d2736,#131a25);color:#9b82ff; }
+  .btn.danger { background:linear-gradient(145deg,#39222a,#25151b);color:#ff8277;box-shadow:7px 7px 15px #090d14,-4px -4px 12px #2b3545; }
+  .volume-control,.category,.alarm-item,.bluetooth-device { border:0;border-radius:18px;background:#141b26;box-shadow:inset 4px 4px 9px #090d14,inset -3px -3px 8px #293548; }
+  .volume-slider { height:8px;background:#101620;box-shadow:inset 3px 3px 6px #080b11,inset -2px -2px 5px #253043; }
+  .volume-slider::-webkit-slider-thumb { border:0;background:#62dfd1;box-shadow:0 0 16px rgba(98,223,209,.45),4px 4px 8px #090d14; }
+  .channel-btn { border:0;border-left:0;border-radius:15px;background:linear-gradient(145deg,#1c2635,#131a25);box-shadow:5px 5px 11px #090d14,-3px -3px 9px #293548;color:#dfe7f0; }
+  .channel-btn:active { box-shadow:inset 4px 4px 9px #090d14,inset -3px -3px 8px #293548; }
+  .alarm-form input,.alarm-form select { border:0;border-radius:13px;background:#121925;color:#eef3f8;box-shadow:inset 4px 4px 8px #090d14,inset -3px -3px 7px #293548; }
+  .alarm-days label { border:0;border-radius:12px;background:linear-gradient(145deg,#1d2736,#131a25);box-shadow:4px 4px 9px #090d14,-3px -3px 7px #293548; }
+  .alarm-days label:has(input:checked) { background:#151d29;color:#b8e86e;box-shadow:inset 4px 4px 8px #090d14,inset -3px -3px 7px #293548; }
+  .status { border:0;background:#141b26;color:#b8e86e;box-shadow:inset 4px 4px 9px #090d14,inset -3px -3px 8px #293548;backdrop-filter:none; }
 </style>
 </head>
 <body>
@@ -211,12 +238,6 @@
         <button class="btn" data-mouse="scrollUp" aria-label="Scorri su">⇡</button><button class="btn mouse-click" data-mouse="large">PASSO +</button><button class="btn" data-mouse="scrollDown" aria-label="Scorri giù">⇣</button>
       </div>
       <p class="mouse-help">Tieni premuta una freccia per muovere il cursore. “Passo +” aumenta la distanza del movimento.</p>
-    </div>
-
-    <div class="section">
-      <h2>🎵 Spotify</h2>
-      <button class="btn" id="spotifyToggle">Carica playlist</button>
-      <div id="spotifyPlaylists" style="margin-top:10px;display:none;"></div>
     </div>
 
     <button class="btn danger" id="shutdownApp">⛔ Chiudi applicazione</button>
@@ -344,34 +365,6 @@
     document.getElementById("cozyOff").onclick = () => socket.emit("toggleCozy", false);
     document.getElementById("screenOn").onclick = () => socket.emit("screenPower", true);
     document.getElementById("screenOff").onclick = () => socket.emit("screenPower", false);
-
-    const spotifyToggle = document.getElementById("spotifyToggle");
-    const spotifyPlaylists = document.getElementById("spotifyPlaylists");
-    let playlistsVisible = false;
-
-    spotifyToggle.onclick = async () => {
-      if (playlistsVisible) {
-        spotifyPlaylists.innerHTML = "";
-        spotifyPlaylists.style.display = "none";
-        spotifyToggle.textContent = "Carica playlist";
-        playlistsVisible = false;
-        return;
-      }
-      
-      spotifyToggle.textContent = "Caricamento...";
-      try {
-        const playlists = await fetch("/spotify/playlists").then(r => r.json());
-        spotifyPlaylists.innerHTML = playlists.map(p => 
-          `<div class="channel-btn" onclick="socket.emit('spotifyPlaylist', '${p.id}')">${p.name}</div>`
-        ).join("");
-        spotifyPlaylists.style.display = "block";
-        spotifyToggle.textContent = "Nascondi playlist";
-        playlistsVisible = true;
-      } catch (err) {
-        spotifyToggle.textContent = "Errore caricamento";
-        setTimeout(() => spotifyToggle.textContent = "Carica playlist", 2000);
-      }
-    };
 
     // Volume Control
     const volumeSlider = document.getElementById("volumeSlider");

@@ -256,6 +256,39 @@
   #listBox,#npArt { border:1px solid var(--glass-line);border-radius:24px;background:var(--glass);box-shadow:0 24px 70px rgba(0,0,0,.3);backdrop-filter:blur(26px); }
   #progressBar { border-top:1px solid var(--glass-line);background:rgba(10,20,38,.7);backdrop-filter:blur(26px); }
   @media (max-width:900px) { #view-home{gap:20px;padding-inline:26px} #homeLeft{flex-basis:46%} #homeRight{flex-basis:54%;padding:20px} .stat-card{min-height:120px}.status-pill{min-height:72px} }
+
+  /* Dark skeuomorphism — tactile controls and deep, quiet contrast. */
+  :root { --neo-bg:#111722;--neo-surface:#171f2c;--neo-dark:#080c13;--neo-light:#293548;--neo-cyan:#62dfd1;--neo-coral:#ff6d5f;--neo-lime:#b8e86e;--neo-violet:#9b82ff;--text:#eef3f8;--muted:#8995a5;--green:var(--neo-cyan);--accent:var(--neo-cyan);--accent-2:var(--neo-violet);--panel:var(--neo-surface);--panel-border:rgba(255,255,255,.055);--accent-grad:linear-gradient(135deg,var(--neo-cyan),var(--neo-violet)); }
+  html,body { background:var(--neo-bg);color:var(--text); }
+  body::before,body::after { display:none; }
+  #app { background:radial-gradient(circle at 72% 16%,rgba(98,223,209,.055),transparent 25%),linear-gradient(145deg,#121925,#0e141e); }
+  #sidebar { width:clamp(78px,6.8vw,102px);margin:18px 0 18px 18px;height:calc(100vh - 36px);padding:20px 0;gap:16px;border:0;border-radius:30px;background:var(--neo-surface);box-shadow:14px 14px 30px var(--neo-dark),-8px -8px 22px var(--neo-light),inset 1px 1px 1px rgba(255,255,255,.055);backdrop-filter:none; }
+  #sidebar::before { width:48px;height:48px;margin-bottom:22px;border:0;border-radius:17px;background:linear-gradient(145deg,#202b3b,#131a25);color:var(--neo-cyan);box-shadow:7px 7px 14px #0a0e15,-5px -5px 12px #293548,inset 1px 1px 1px rgba(255,255,255,.07); }
+  .nav-btn { border:0;border-radius:18px;background:linear-gradient(145deg,#1b2533,#131a25);color:#7f8b9b;box-shadow:6px 6px 13px #090d14,-4px -4px 11px #283446;transition:transform .15s,box-shadow .15s,color .15s; }
+  .nav-btn:hover { background:linear-gradient(145deg,#1b2533,#131a25);color:#dce5ef; }
+  .nav-btn:active,.nav-btn.active { transform:translateY(1px);color:var(--neo-cyan);background:#141c28;box-shadow:inset 5px 5px 11px #090d14,inset -4px -4px 10px #273244,0 0 20px rgba(98,223,209,.08); }
+  #content::before { color:#657183; }
+  #netPill { border:0;border-radius:16px;background:#141c27;color:var(--neo-cyan);box-shadow:inset 4px 4px 9px #090d14,inset -3px -3px 8px #273244;padding:10px 16px;backdrop-filter:none; }
+  #view-home { gap:clamp(30px,4vw,72px); }
+  #clock { color:#e8edf3;background:none;-webkit-text-fill-color:initial;text-shadow:8px 8px 16px #090d14,-5px -5px 14px rgba(52,66,87,.65);font-weight:720; }
+  #dateLine { border:0;border-radius:17px;background:var(--neo-surface);color:#9aa6b6;box-shadow:inset 4px 4px 10px #090d14,inset -3px -3px 9px #293548;padding:12px 18px; }
+  #homeRight { border:0;border-radius:34px;background:var(--neo-surface);box-shadow:18px 18px 38px #080c13,-10px -10px 28px #263143,inset 1px 1px 1px rgba(255,255,255,.045);backdrop-filter:none; }
+  .stat-card,.status-pill { border:0;background:linear-gradient(145deg,#1c2635,#131a25);box-shadow:8px 8px 17px #090d14,-5px -5px 14px #283446,inset 1px 1px 1px rgba(255,255,255,.045);backdrop-filter:none; }
+  .stat-card { border-radius:25px; }
+  .stat-card:first-child .value { color:var(--neo-coral); }
+  .stat-card:last-child .value { color:var(--neo-cyan); }
+  .stat-card .value { text-shadow:0 0 22px currentColor; }
+  .status-pill { border-radius:20px; }
+  .status-pill.clickable:hover { transform:translateY(-2px);background:linear-gradient(145deg,#202b3b,#141b27); }
+  .status-pill.clickable:active { transform:translateY(1px);box-shadow:inset 5px 5px 11px #090d14,inset -4px -4px 10px #273244; }
+  .status-dot { border:0;background:#556174;box-shadow:inset 2px 2px 4px #252c38,inset -1px -1px 3px #758297; }
+  .status-pill.on .status-dot { background:var(--neo-lime);box-shadow:0 0 14px rgba(184,232,110,.65),inset 1px 1px 2px #e8ffbb; }
+  #spotifyLoginBox button,#backToPlaylists,.playlist-row,.track-row { border:0;background:linear-gradient(145deg,#1c2635,#131a25);box-shadow:7px 7px 15px #090d14,-4px -4px 12px #283446;color:var(--text); }
+  #listBox,#npArt { border:0;border-radius:26px;background:var(--neo-surface);box-shadow:14px 14px 32px #080c13,-8px -8px 22px #263143;backdrop-filter:none; }
+  #progressBar { border:0;background:#121925;box-shadow:inset 0 5px 12px #080c13;backdrop-filter:none; }
+  #progressTrack { height:8px;background:#101620;box-shadow:inset 3px 3px 6px #080b11,inset -2px -2px 5px #253043; }
+  #progressFill { background:linear-gradient(90deg,var(--neo-cyan),var(--neo-violet)); }
+  #playIcon { background:linear-gradient(145deg,#202b3b,#131a25);color:var(--neo-cyan);box-shadow:6px 6px 13px #090d14,-4px -4px 10px #293548; }
 </style>
 </head>
 <body>

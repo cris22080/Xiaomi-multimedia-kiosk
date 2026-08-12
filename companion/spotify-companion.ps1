@@ -16,6 +16,7 @@ $pollMs = [math]::Max(1000, [int]$settings.pollingIntervalMs)
 Add-Type -AssemblyName System.Runtime.WindowsRuntime
 [Windows.Media.Control.GlobalSystemMediaTransportControlsSessionManager, Windows.Media.Control, ContentType=WindowsRuntime] > $null
 [Windows.Storage.Streams.IRandomAccessStreamWithContentType, Windows.Storage.Streams, ContentType=WindowsRuntime] > $null
+[Windows.Storage.Streams.DataReader, Windows.Storage.Streams, ContentType=WindowsRuntime] > $null
 $asTaskGeneric = ([System.WindowsRuntimeSystemExtensions].GetMethods() | Where-Object {
   $_.Name -eq 'AsTask' -and $_.IsGenericMethod -and $_.GetParameters().Count -eq 1
 })[0]
@@ -27,19 +28,46 @@ function Await-WinRt($operation, [Type]$resultType) {
 
 function Get-ArtworkDataUrl($thumbnail) {
   if ($null -eq $thumbnail) { return $null }
-  $randomStream = $null; $stream = $null; $memory = $null
   try {
     $randomStream = Await-WinRt ($thumbnail.OpenReadAsync()) ([Windows.Storage.Streams.IRandomAccessStreamWithContentType])
-    $stream = [System.IO.WindowsRuntimeStreamExtensions]::AsStreamForRead($randomStream)
-    $memory = [System.IO.MemoryStream]::new()
-    $stream.CopyTo($memory)
+    if ($null -eq $randomStream -or $randomStream.Size -le 0) { return $null }
+    $reader = [Windows.Storage.Streams.DataReader]::new($randomStream.GetInputStreamAt(0))
+    $size = [uint32][math]::Min($randomStream.Size, [uint32]::MaxValue)
+    [void](Await-WinRt ($reader.LoadAsync($size)) ([uint32]))
+    $bytes = [byte[]]::new($size)
+    $reader.ReadBytes($bytes)
     $mime = if ($randomStream.ContentType) { $randomStream.ContentType } else { 'image/jpeg' }
-    "data:$mime;base64,$([Convert]::ToBase64String($memory.ToArray()))"
-  } catch { $null } finally {
-    if ($stream) { $stream.Dispose() }
-    if ($randomStream) { $randomStream.Dispose() }
-    if ($memory) { $memory.Dispose() }
+    "data:$mime;base64,$([Convert]::ToBase64String($bytes))"
+  } catch {
+    Write-Warning "Copertina non leggibile: $($_.Exception.Message)"
+    $null
   }
+}
+
+function Find-OnlineArtwork([string]$title, [string]$artist) {
+  if ([string]::IsNullOrWhiteSpace($title)) { return $null }
+  try {
+    $term = [uri]::EscapeDataString("$artist $title")
+    $result = Invoke-RestMethod `
+      -Uri "https://itunes.apple.com/search?term=$term&country=IT&media=music&entity=song&limit=5" `
+      -Method Get -TimeoutSec 6
+    $match = @($result.results) | Where-Object {
+      $_.artworkUrl100 -and (
+        $_.trackName -eq $title -or
+        $_.artistName -eq $artist
+      )
+    } | Select-Object -First 1
+    if ($null -eq $match) {
+      $match = @($result.results) | Where-Object { $_.artworkUrl100 } | Select-Object -First 1
+    }
+    if ($match.artworkUrl100) {
+      # Cambia solo il token delle dimensioni, preservando estensione e query.
+      return [regex]::Replace([string]$match.artworkUrl100, '100x100(?:bb|-\d+)?(?=\.)', '600x600bb')
+    }
+  } catch {
+    Write-Warning "Ricerca copertina online fallita: $($_.Exception.Message)"
+  }
+  return $null
 }
 
 $manager = $null; $lastMediaKey = ''; $lastArtwork = $null
@@ -63,6 +91,9 @@ while ($true) {
       $mediaKey = "$($properties.Title)|$($properties.Artist)|$($properties.AlbumTitle)"
       if ($mediaKey -ne $lastMediaKey) {
         $lastArtwork = Get-ArtworkDataUrl $properties.Thumbnail
+        if (-not $lastArtwork) {
+          $lastArtwork = Find-OnlineArtwork $properties.Title $properties.Artist
+        }
         $lastMediaKey = $mediaKey
       }
       $payload = [ordered]@{
