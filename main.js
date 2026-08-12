@@ -12,6 +12,7 @@ const screenControl = require("./modules/screenControl");
 const network = require("./modules/network");
 const remoteServer = require("./modules/remoteServer");
 const spotify = require("./modules/spotify");
+const windowsMediaSession = require("./modules/windowsMediaSession");
 const windowsVolume = require("./modules/windowsVolume");
 
 const alarmManager = require("./modules/alarmManager");
@@ -22,6 +23,7 @@ let spotifyPollTimer = null;
 let remoteCursor = { x: 0, y: 0 };
 let softScreenOn = true;
 let suspensionBlockerId = null;
+let remoteMediaTimeout = null;
 
 Menu.setApplicationMenu(null);
 
@@ -85,6 +87,8 @@ function shutdownFromRemote() {
 // mostrare automaticamente il Now Playing sul dispositivo configurato.
 function startSpotifyPolling() {
   stopSpotifyPolling();
+  // Il monitor locale non richiede Premium ed è la fonte primaria sul kiosk.
+  if (config.windowsMedia?.enabled) return;
   if (!spotify.isAuthenticated()) return;
 
   async function tick() {
@@ -121,6 +125,11 @@ app.whenReady().then(() => {
   console.log(`[power] blocco sospensione attivo: ${powerSaveBlocker.isStarted(suspensionBlockerId)}`);
   createMainWindow();
   startSpotifyPolling();
+  windowsMediaSession.start(config.windowsMedia, (track) => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send("spotify:nowPlaying", track);
+    }
+  }, (message) => console.warn(`[media-session] ${message}`));
 
   // --- Arduino: polling dati via WiFi/HTTP ---
   arduinoClient.start(config.arduino, (data, err) => {
@@ -163,6 +172,19 @@ app.whenReady().then(() => {
     onSpotifyAuthenticated: () => {
       mainWindow.webContents.send("spotify:authenticated");
       startSpotifyPolling();
+    },
+    onRemoteMediaSession: (track) => {
+      if (!mainWindow || mainWindow.isDestroyed()) return;
+      const payload = track && typeof track === "object"
+        ? { ...track, autoDisplay: Boolean(track.isPlaying), deviceMatches: true, remoteSession: true }
+        : null;
+      mainWindow.webContents.send("spotify:nowPlaying", payload);
+      if (remoteMediaTimeout) clearTimeout(remoteMediaTimeout);
+      // Se il PC companion si spegne o esce dalla rete, non lascia la
+      // copertina bloccata indefinitamente sul kiosk.
+      remoteMediaTimeout = setTimeout(() => {
+        if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send("spotify:nowPlaying", null);
+      }, 12000);
     },
     onPlayIPTV: (data) => {
       if (mainWindow) mainWindow.setFullScreen(true);
@@ -295,7 +317,7 @@ app.whenReady().then(() => {
         return { success: false, error: error.message };
       }
     }
-  }, config.iptv);
+  }, config.iptv, { token: config.remote.mediaCompanionToken });
 
   alarmManager.start((alarm) => {
     softScreenOn = true;
@@ -468,4 +490,10 @@ app.whenReady().then(() => {
 
 app.on("window-all-closed", () => {
   if (allowQuit) app.quit();
+});
+
+app.on("will-quit", () => {
+  if (remoteMediaTimeout) clearTimeout(remoteMediaTimeout);
+  stopSpotifyPolling();
+  windowsMediaSession.stop();
 });

@@ -26,7 +26,9 @@ module.exports = {
 
   // Server per il telecomando remoto + callback OAuth Spotify
   remote: {
-    port: 4848
+    port: 4848,
+    // Deve coincidere con il token configurato dal companion sul PC.
+    mediaCompanionToken: "cozy-desk-lan-media"
   },
 
   // App Spotify (creala gratis su https://developer.spotify.com/dashboard)
@@ -47,6 +49,13 @@ module.exports = {
       "playlist-read-private",
       "playlist-read-collaborative"
     ]
+  },
+
+  // Now Playing locale di Windows: non richiede Spotify Premium né Client ID.
+  windowsMedia: {
+    enabled: true,
+    spotifyOnly: true,
+    pollingIntervalMs: 3000
   },
 
   // Cartella dove mettere i video/animazioni per la cozy view

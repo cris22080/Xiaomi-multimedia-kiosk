@@ -13,7 +13,7 @@ let io = null;
 let iptvConfigRef = null;
 let mainHandlers = null;
 
-function start(port, handlers, config) {
+function start(port, handlers, config, companionConfig = {}) {
   mainHandlers = handlers;
   iptvConfigRef = config;
   const app = express();
@@ -46,6 +46,19 @@ function start(port, handlers, config) {
 
   app.get("/state", (req, res) => {
     res.json(handlers.onGetState());
+  });
+
+  // Riceve il Now Playing dal companion installato su un altro PC Windows.
+  app.post("/media-session", express.json({ limit: "5mb" }), (req, res) => {
+    const expected = String(companionConfig.token || "");
+    const supplied = String(req.get("x-cozy-token") || "");
+    if (!expected || supplied !== expected) return res.status(401).json({ error: "Token non valido" });
+    try {
+      handlers.onRemoteMediaSession(req.body ?? null);
+      res.json({ ok: true });
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
   });
 
   // Serve an imported channels playlist if present at repo root
