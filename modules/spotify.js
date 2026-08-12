@@ -23,6 +23,10 @@ const API_BASE = "https://api.spotify.com/v1";
 let cfgRef = null;
 let pendingVerifier = null; // code_verifier in attesa del callback
 
+function configure(cfg) {
+  cfgRef = cfg;
+}
+
 function base64url(buffer) {
   return buffer.toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
@@ -122,7 +126,9 @@ async function apiGet(path) {
 }
 
 async function getCurrentlyPlaying() {
-  const data = await apiGet("/me/player/currently-playing");
+  // /me/player, a differenza di /currently-playing, include anche il
+  // dispositivo Spotify Connect attivo.
+  const data = await apiGet("/me/player");
   if (!data || !data.item) return null;
   return {
     isPlaying: data.is_playing,
@@ -131,7 +137,13 @@ async function getCurrentlyPlaying() {
     title: data.item.name,
     artists: data.item.artists.map((a) => a.name).join(", "),
     album: data.item.album.name,
-    albumArt: data.item.album.images[0] ? data.item.album.images[0].url : null
+    albumArt: data.item.album.images[0] ? data.item.album.images[0].url : null,
+    device: data.device ? {
+      id: data.device.id || null,
+      name: data.device.name || "Dispositivo sconosciuto",
+      type: data.device.type || null,
+      volumePercent: data.device.volume_percent
+    } : null
   };
 }
 
@@ -159,6 +171,7 @@ async function getPlaylistTracks(playlistId) {
 }
 
 module.exports = {
+  configure,
   buildAuthUrl,
   exchangeCode,
   isAuthenticated,

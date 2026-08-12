@@ -35,6 +35,12 @@ module.exports = {
   spotify: {
     clientId: "INSERISCI_IL_TUO_CLIENT_ID",
     redirectUri: "http://127.0.0.1:4848/spotify/callback",
+    // Lascia vuoto per mostrare il Now Playing con qualsiasi dispositivo.
+    // In alternativa inserisci tutto o parte del nome mostrato da Spotify
+    // (es. "Xiaomi", confronto senza distinzione tra maiuscole/minuscole).
+    targetDeviceName: "",
+    autoNowPlaying: true,
+    pollingIntervalMs: 5000,
     scopes: [
       "user-read-currently-playing",
       "user-read-playback-state",

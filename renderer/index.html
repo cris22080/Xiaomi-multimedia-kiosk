@@ -149,6 +149,34 @@
   #timeCur, #timeDur { font-size: clamp(10px,1vw,12px); color:var(--muted); width:3.2em; }
   #timeDur { text-align:right; }
 
+  /* Now Playing automatico, ispirato alla vista a tutto schermo di Apple Music. */
+  #spotifyAutoNowPlaying { display:none; position:fixed; inset:0; z-index:10010; overflow:hidden;
+    color:#fff; background:#07101b; isolation:isolate; cursor:pointer; }
+  #spotifyAutoNowPlaying.visible { display:flex; align-items:center; justify-content:center; }
+  #autoNpBackdrop { position:absolute; inset:-8%; z-index:-2; background:center/cover no-repeat;
+    filter:blur(55px) saturate(1.35); transform:scale(1.14); opacity:.72; transition:background-image .5s ease; }
+  #spotifyAutoNowPlaying::after { content:""; position:absolute; inset:0; z-index:-1;
+    background:linear-gradient(180deg,rgba(3,8,18,.22),rgba(3,8,18,.72)); }
+  #autoNpContent { width:min(88vw,1080px); display:grid; grid-template-columns:minmax(260px,46vh) minmax(300px,1fr);
+    align-items:center; gap:clamp(34px,6vw,90px); }
+  #autoNpArt { width:100%; aspect-ratio:1; object-fit:cover; border-radius:clamp(18px,2.2vw,34px);
+    box-shadow:0 32px 90px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.2); }
+  #autoNpInfo { min-width:0; text-shadow:0 2px 22px rgba(0,0,0,.55); }
+  #autoNpDevice { font-size:clamp(11px,1.2vw,15px); font-weight:750; letter-spacing:.16em;
+    text-transform:uppercase; opacity:.72; margin-bottom:2vh; }
+  #autoNpTitle { font-size:clamp(34px,5.5vw,78px); font-weight:820; line-height:1.02;
+    letter-spacing:-.045em; overflow-wrap:anywhere; }
+  #autoNpArtist { margin-top:1.4vh; font-size:clamp(18px,2.2vw,32px); opacity:.8; }
+  #autoNpProgress { height:7px; margin-top:5vh; border-radius:999px; background:rgba(255,255,255,.25); overflow:hidden; }
+  #autoNpProgressFill { height:100%; width:0; border-radius:inherit; background:#fff; transition:width .7s linear; }
+  #autoNpTimes { display:flex; justify-content:space-between; margin-top:1vh; font-size:clamp(11px,1vw,14px); opacity:.65; }
+  #autoNpHint { position:absolute; right:2.2vw; bottom:2.5vh; font-size:12px; opacity:.5; }
+  @media (max-width:720px) {
+    #autoNpContent { width:min(82vw,520px); grid-template-columns:1fr; gap:3vh; text-align:center; }
+    #autoNpArt { width:min(62vw,42vh); justify-self:center; }
+    #autoNpTitle { font-size:clamp(28px,8vw,50px); }
+  }
+
   .empty-state { text-align:center; opacity:.5; padding:20px; font-size:12px; }
 
   /* Shared visual language with the mobile remote: warm editorial surfaces
@@ -232,6 +260,20 @@
 </head>
 <body>
   <div id="softScreenOff" aria-hidden="true" style="display:none;position:fixed;inset:0;z-index:2147483647;background:#000;cursor:none;"></div>
+  <div id="spotifyAutoNowPlaying" aria-hidden="true" title="Tocca per chiudere">
+    <div id="autoNpBackdrop"></div>
+    <div id="autoNpContent">
+      <img id="autoNpArt" alt="Copertina del brano">
+      <div id="autoNpInfo">
+        <div id="autoNpDevice">Spotify</div>
+        <div id="autoNpTitle">--</div>
+        <div id="autoNpArtist">--</div>
+        <div id="autoNpProgress"><div id="autoNpProgressFill"></div></div>
+        <div id="autoNpTimes"><span id="autoNpTimeCur">0:00</span><span id="autoNpTimeDur">0:00</span></div>
+      </div>
+    </div>
+    <div id="autoNpHint">tocca per chiudere</div>
+  </div>
   <div id="app">
     <div id="sidebar">
       <button class="nav-btn active" data-view="home">🏠</button>
@@ -373,7 +415,9 @@
 
     // ---------- Navigazione tra schermate ----------
     const views = ["home", "cozy", "iptv", "spotify", "alarm"];
+    let currentView = "home";
     function goTo(view) {
+      currentView = view;
       views.forEach((v) => {
         document.getElementById("view-" + v).classList.toggle("active", v === view);
         const navButton = document.querySelector(`.nav-btn[data-view="${v}"]`);
@@ -842,6 +886,14 @@
 
     window.cozyDesk.onSpotifyAuthenticated(() => initSpotifyView());
 
+    const autoNowPlaying = document.getElementById("spotifyAutoNowPlaying");
+    let autoNowPlayingDismissedFor = null;
+    autoNowPlaying.addEventListener("click", () => {
+      autoNowPlayingDismissedFor = autoNowPlaying.dataset.trackKey || null;
+      autoNowPlaying.classList.remove("visible");
+      autoNowPlaying.setAttribute("aria-hidden", "true");
+    });
+
     function formatTime(ms) {
       const totalSec = Math.floor((ms || 0) / 1000);
       const m = Math.floor(totalSec / 60);
@@ -856,6 +908,8 @@
         document.getElementById("npArtist").textContent = "--";
         playIcon.textContent = "▶";
         document.getElementById("progressFill").style.width = "0%";
+        autoNowPlaying.classList.remove("visible");
+        autoNowPlaying.setAttribute("aria-hidden", "true");
         return;
       }
       document.getElementById("npArt").src = track.albumArt || "";
@@ -866,6 +920,24 @@
       document.getElementById("progressFill").style.width = pct + "%";
       document.getElementById("timeCur").textContent = formatTime(track.progressMs);
       document.getElementById("timeDur").textContent = formatTime(track.durationMs);
+
+      const trackKey = `${track.title}|${track.artists}|${track.device?.id || track.device?.name || ""}`;
+      if (autoNowPlaying.dataset.trackKey !== trackKey) autoNowPlayingDismissedFor = null;
+      autoNowPlaying.dataset.trackKey = trackKey;
+      document.getElementById("autoNpArt").src = track.albumArt || "";
+      document.getElementById("autoNpBackdrop").style.backgroundImage = track.albumArt ? `url("${track.albumArt}")` : "none";
+      document.getElementById("autoNpTitle").textContent = track.title;
+      document.getElementById("autoNpArtist").textContent = track.artists;
+      document.getElementById("autoNpDevice").textContent = `Spotify · ${track.device?.name || "dispositivo attivo"}`;
+      document.getElementById("autoNpProgressFill").style.width = pct + "%";
+      document.getElementById("autoNpTimeCur").textContent = formatTime(track.progressMs);
+      document.getElementById("autoNpTimeDur").textContent = formatTime(track.durationMs);
+
+      // Non copre la sveglia e non riappare sullo stesso brano dopo una
+      // chiusura manuale. Al brano successivo torna automaticamente.
+      const shouldShow = track.autoDisplay && currentView !== "alarm" && autoNowPlayingDismissedFor !== trackKey;
+      autoNowPlaying.classList.toggle("visible", Boolean(shouldShow));
+      autoNowPlaying.setAttribute("aria-hidden", shouldShow ? "false" : "true");
     });
 
     window.cozyDesk.onSpotifyError((msg) => console.error("Spotify:", msg));

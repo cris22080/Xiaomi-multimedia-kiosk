@@ -81,8 +81,8 @@ function shutdownFromRemote() {
   app.quit();
 }
 
-// --- Polling Spotify: parte solo quando l'utente è sulla schermata Spotify,
-// per non consumare rate-limit/rete quando non serve.
+// --- Polling Spotify globale: serve anche fuori dalla schermata Spotify per
+// mostrare automaticamente il Now Playing sul dispositivo configurato.
 function startSpotifyPolling() {
   stopSpotifyPolling();
   if (!spotify.isAuthenticated()) return;
@@ -90,13 +90,22 @@ function startSpotifyPolling() {
   async function tick() {
     try {
       const track = await spotify.getCurrentlyPlaying();
-      mainWindow.webContents.send("spotify:nowPlaying", track);
+      const wantedDevice = String(config.spotify.targetDeviceName || "").trim().toLowerCase();
+      const activeDevice = String(track?.device?.name || "").toLowerCase();
+      const deviceMatches = !wantedDevice || activeDevice.includes(wantedDevice);
+      const payload = track ? {
+        ...track,
+        autoDisplay: Boolean(config.spotify.autoNowPlaying && deviceMatches && track.isPlaying),
+        deviceMatches
+      } : null;
+      mainWindow.webContents.send("spotify:nowPlaying", payload);
     } catch (err) {
       mainWindow.webContents.send("spotify:error", err.message);
     }
   }
   tick();
-  spotifyPollTimer = setInterval(tick, 5000);
+  const interval = Math.max(3000, Number(config.spotify.pollingIntervalMs) || 5000);
+  spotifyPollTimer = setInterval(tick, interval);
 }
 
 function stopSpotifyPolling() {
@@ -105,11 +114,13 @@ function stopSpotifyPolling() {
 }
 
 app.whenReady().then(() => {
+  spotify.configure(config.spotify);
   // Mantiene processo, rete e display logicamente attivi. La luminosità viene
   // portata a zero da screenControl senza attivare Modern Standby sullo Xiaomi.
   suspensionBlockerId = powerSaveBlocker.start("prevent-display-sleep");
   console.log(`[power] blocco sospensione attivo: ${powerSaveBlocker.isStarted(suspensionBlockerId)}`);
   createMainWindow();
+  startSpotifyPolling();
 
   // --- Arduino: polling dati via WiFi/HTTP ---
   arduinoClient.start(config.arduino, (data, err) => {
@@ -339,8 +350,12 @@ app.whenReady().then(() => {
   ipcMain.handle("spotify:getPlaylists", () => spotify.getPlaylists());
   ipcMain.handle("spotify:getPlaylistTracks", (_e, id) => spotify.getPlaylistTracks(id));
 
-  ipcMain.on("ui:enteredSpotifyView", () => startSpotifyPolling());
-  ipcMain.on("ui:leftSpotifyView", () => stopSpotifyPolling());
+  // Conservati per compatibilità con il renderer: il polling ora resta
+  // attivo in background per il Now Playing automatico.
+  ipcMain.on("ui:enteredSpotifyView", () => {
+    if (!spotifyPollTimer) startSpotifyPolling();
+  });
+  ipcMain.on("ui:leftSpotifyView", () => {});
 
   ipcMain.handle("iptv:getConfig", () => config.iptv);
   ipcMain.handle("alarm:stop", () => {
