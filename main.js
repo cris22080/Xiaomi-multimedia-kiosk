@@ -166,7 +166,7 @@ app.whenReady().then(() => {
     onScreenPower: (on) => {
       softScreenOn = Boolean(on);
       if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send("screen:softPower", Boolean(on));
-      return screenControl.setScreenPower(Boolean(on));
+      return screenControl.setManualScreenPower(Boolean(on));
     },
     onShutdownApp: () => shutdownFromRemote(),
     onSpotifyAuthenticated: () => {
@@ -330,7 +330,7 @@ app.whenReady().then(() => {
   });
 
   // --- IPC dal renderer ---
-  ipcMain.on("ui:setScreenPower", (_e, on) => screenControl.setScreenPower(on));
+  ipcMain.on("ui:setScreenPower", (_e, on) => screenControl.setManualScreenPower(on));
   // Allow renderer to request OS-level fullscreen on the BrowserWindow (kiosk) — returns new state
   ipcMain.handle("ui:setAppFullscreen", (_e, on) => {
     try {

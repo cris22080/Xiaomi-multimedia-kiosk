@@ -20,8 +20,8 @@ module.exports = {
   // fasce lo schermo viene spento (ma il PC resta acceso e attivo).
   screenSchedule: {
     enabled: true,
-    onFrom: "07:00",
-    onTo: "23:30"
+    onFrom: "09:00",
+    onTo: "22:00"
   },
 
   // Server per il telecomando remoto + callback OAuth Spotify

@@ -8,6 +8,10 @@ const { spawn } = require("child_process");
 
 let schedulerTimer = null;
 let lastState = null; // true = acceso, false = spento, null = sconosciuto
+let manualOverride = null;
+let scheduleStateAtOverride = null;
+let schedulerConfig = null;
+let schedulerCallback = null;
 
 function setScreenPower(on) {
   if (process.platform !== "win32") {
@@ -21,6 +25,19 @@ function setScreenPower(on) {
   } else {
     return sleepScreen();
   }
+}
+
+// Un comando dell'utente non deve essere annullato dal tick del minuto
+// successivo. Resta valido finché la fascia oraria cambia stato.
+function setManualScreenPower(on) {
+  const requested = Boolean(on);
+  manualOverride = requested;
+  scheduleStateAtOverride = schedulerConfig
+    ? isWithinSchedule(schedulerConfig.onFrom, schedulerConfig.onTo)
+    : null;
+  return setScreenPower(requested).then(() => {
+    if (typeof schedulerCallback === "function") schedulerCallback(requested);
+  });
 }
 
 function sleepScreen() {
@@ -132,9 +149,20 @@ function isWithinSchedule(onFrom, onTo) {
 
 function startScheduler(cfg, onStateChange) {
   if (!cfg.enabled) return;
+  schedulerConfig = cfg;
+  schedulerCallback = onStateChange;
 
   function tick() {
-    const shouldBeOn = isWithinSchedule(cfg.onFrom, cfg.onTo);
+    const scheduledState = isWithinSchedule(cfg.onFrom, cfg.onTo);
+
+    // Al passaggio 22:00/09:00 termina l'override manuale e torna a valere
+    // la programmazione. Durante la stessa fascia l'override viene rispettato.
+    if (manualOverride !== null && scheduledState !== scheduleStateAtOverride) {
+      manualOverride = null;
+      scheduleStateAtOverride = null;
+    }
+
+    const shouldBeOn = manualOverride === null ? scheduledState : manualOverride;
     if (shouldBeOn !== lastState) {
       setScreenPower(shouldBeOn).then(() => {
         if (typeof onStateChange === "function") onStateChange(shouldBeOn);
@@ -148,6 +176,9 @@ function startScheduler(cfg, onStateChange) {
 
 function stopScheduler() {
   if (schedulerTimer) clearInterval(schedulerTimer);
+  schedulerTimer = null;
+  schedulerConfig = null;
+  schedulerCallback = null;
 }
 
-module.exports = { setScreenPower, startScheduler, stopScheduler };
+module.exports = { setScreenPower, setManualScreenPower, startScheduler, stopScheduler, isWithinSchedule };
