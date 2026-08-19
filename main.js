@@ -24,6 +24,14 @@ let remoteCursor = { x: 0, y: 0 };
 let softScreenOn = true;
 let suspensionBlockerId = null;
 let remoteMediaTimeout = null;
+let remoteMediaHideTimeout = null;
+let lastRemoteMediaHeartbeat = 0;
+
+function remoteMediaIsActive() {
+  // Il companion invia un heartbeat ogni ~3 secondi, anche quando Spotify è
+  // fermo. Finché è raggiungibile, è l'unica sorgente autorevole.
+  return Date.now() - lastRemoteMediaHeartbeat < 10000;
+}
 
 Menu.setApplicationMenu(null);
 
@@ -126,6 +134,9 @@ app.whenReady().then(() => {
   createMainWindow();
   startSpotifyPolling();
   windowsMediaSession.start(config.windowsMedia, (track) => {
+    // Evita l'alternanza: lo Xiaomi spesso non ha una sessione Spotify locale
+    // e invierebbe null tra due aggiornamenti validi ricevuti dal PC companion.
+    if (remoteMediaIsActive()) return;
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send("spotify:nowPlaying", track);
     }
@@ -175,14 +186,35 @@ app.whenReady().then(() => {
     },
     onRemoteMediaSession: (track) => {
       if (!mainWindow || mainWindow.isDestroyed()) return;
+      lastRemoteMediaHeartbeat = Date.now();
       const payload = track && typeof track === "object"
         ? { ...track, autoDisplay: Boolean(track.isPlaying), deviceMatches: true, remoteSession: true }
         : null;
-      mainWindow.webContents.send("spotify:nowPlaying", payload);
+
+      if (payload?.isPlaying) {
+        // Un dato valido vince subito e annulla un'eventuale chiusura in
+        // attesa. Serve a mascherare letture WinRT vuote intermittenti.
+        if (remoteMediaHideTimeout) clearTimeout(remoteMediaHideTimeout);
+        remoteMediaHideTimeout = null;
+        mainWindow.webContents.send("spotify:nowPlaying", payload);
+      } else if (!remoteMediaHideTimeout) {
+        // Pausa/null devono persistere: una singola lettura mancante non deve
+        // far lampeggiare la vista tra due heartbeat validi del companion.
+        remoteMediaHideTimeout = setTimeout(() => {
+          remoteMediaHideTimeout = null;
+          if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send("spotify:nowPlaying", payload);
+          }
+        }, 8000);
+      }
+
       if (remoteMediaTimeout) clearTimeout(remoteMediaTimeout);
       // Se il PC companion si spegne o esce dalla rete, non lascia la
       // copertina bloccata indefinitamente sul kiosk.
       remoteMediaTimeout = setTimeout(() => {
+        lastRemoteMediaHeartbeat = 0;
+        if (remoteMediaHideTimeout) clearTimeout(remoteMediaHideTimeout);
+        remoteMediaHideTimeout = null;
         if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send("spotify:nowPlaying", null);
       }, 12000);
     },
@@ -494,6 +526,7 @@ app.on("window-all-closed", () => {
 
 app.on("will-quit", () => {
   if (remoteMediaTimeout) clearTimeout(remoteMediaTimeout);
+  if (remoteMediaHideTimeout) clearTimeout(remoteMediaHideTimeout);
   stopSpotifyPolling();
   windowsMediaSession.stop();
 });
