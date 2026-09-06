@@ -1,0 +1,107 @@
+// Isolated rendering and local socket tests. Never starts the real kiosk/hardware.
+const { app, BrowserWindow, ipcMain, WebContentsView } = require('electron');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const assert = require('node:assert/strict');
+const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
+const { WebPlayer } = require('../modules/webPlayer');
+const output = fs.mkdtempSync(path.join(os.tmpdir(), 'cozy-ui-check-'));
+app.setPath('userData', path.join(output, 'profile'));
+app.disableHardwareAcceleration();
+const pause = (ms = 180) => new Promise((resolve) => setTimeout(resolve, ms));
+const root = path.join(__dirname, '..');
+const errors = [];
+let window, player, server, io;
+let channel = null;
+const config = { categories: [{ name: 'Sport', channels: [{ name: 'F1Net', url: 'https://f1net.dpdns.org/stream', type: 'web' }, { name: 'RSI LA 2', url: 'https://example.test/live.m3u8' }] }, { name: 'Italia', channels: [{ name: 'Rai 1', url: 'https://example.test/rai.m3u8' }] }] };
+const finish = (error) => {
+  clearTimeout(deadline);
+  player?.close();
+  if (window && !window.isDestroyed()) window.destroy();
+  io?.close(); server?.close();
+  console.log('Screenshots:', output);
+  if (error) console.error(error.stack || error);
+  app.exit(error ? 1 : 0);
+};
+const deadline = setTimeout(() => finish(new Error('UI test timed out')), 45000);
+
+app.whenReady().then(async () => {
+  for (const [name, value] of Object.entries({ 'ui:setAppFullscreen': { ok: true }, 'cozy:getLocalVideo': null, 'spotify:isAuthenticated': false, 'spotify:getPlaylists': [], 'spotify:getPlaylistTracks': [], 'iptv:getConfig': config, 'arduino:toggle': { success: true }, 'volume:set': { success: true }, 'alarm:stop': { success: true } })) ipcMain.handle(name, () => value);
+  window = new BrowserWindow({ show: false, width: 1280, height: 540, webPreferences: { preload: path.join(root, 'renderer/preload.js'), nodeIntegration: false, contextIsolation: true } });
+  window.webContents.on('console-message', (_e, level, message) => { if (level >= 3 && /Uncaught|TypeError|ReferenceError/.test(message)) errors.push(message); });
+  player = new WebPlayer({ window, WebContentsView });
+  ipcMain.on('ui:view', (_e, view) => { if (view !== 'iptv') player.close(); });
+  ipcMain.on('iptv:webClose', () => player.close());
+  ipcMain.on('iptv:webPresent', (_e, presentation) => player.setPresentation(presentation));
+  ipcMain.handle('iptv:webOpen', (_e, url) => player.open(url));
+  const capture = async (name, width, height) => {
+    window.setContentSize(width, height); await pause(240);
+    fs.writeFileSync(path.join(output, name + '.png'), (await window.webContents.capturePage()).toPNG());
+    const overflow = await window.webContents.executeJavaScript('document.documentElement.scrollWidth > innerWidth');
+    assert.equal(overflow, false, `${name}: no horizontal page overflow`);
+  };
+  await window.loadFile(path.join(root, 'renderer/index.html'));
+  window.webContents.send('arduino:data', { datiMeteoRicevuti: true, temperatura: 24.5, umidita: 48, ventilatore: false, luci: true, lampada: true, automatismiAttivi: true });
+  window.webContents.send('network:status', { online: true });
+  await capture('kiosk-1280', 1280, 540);
+  assert.ok(await window.webContents.executeJavaScript("document.querySelector('#homeRight').getBoundingClientRect().bottom < innerHeight"), 'Room console fits short landscape');
+  await capture('kiosk-1920', 1920, 1080);
+  await capture('kiosk-portrait', 390, 844);
+  await window.webContents.executeJavaScript("goTo('iptv')");
+  await capture('kiosk-tv', 1280, 540);
+  await window.webContents.executeJavaScript("goTo('spotify')");
+  await capture('kiosk-music', 1280, 540);
+  await window.webContents.executeJavaScript("goTo('home')");
+  window.webContents.send('spotify:nowPlaying', { title: 'Midnight City', artists: 'M83', isPlaying: true, autoDisplay: true, durationMs: 243000, progressMs: 68000, device: { name: 'PC · Studio' } });
+  await pause();
+  assert.ok(await window.webContents.executeJavaScript("document.querySelector('#spotifyAutoNowPlaying').classList.contains('visible')"));
+  window.webContents.send('nav:goto', 'iptv');
+  await pause();
+  window.webContents.send('spotify:nowPlaying', { title: 'Midnight City', artists: 'M83', isPlaying: true, autoDisplay: true });
+  await pause();
+  assert.equal(await window.webContents.executeJavaScript("document.querySelector('#spotifyAutoNowPlaying').classList.contains('visible')"), false, 'Music does not intercept TV input');
+  assert.deepEqual(errors, [], 'Kiosk has no uncaught JS errors');
+
+  const web = express();
+  web.use(express.json());
+  web.use(express.static(path.join(root, 'remote/public')));
+  let volume = 42;
+  let state = { online: true, screenOn: true, cozyActive: false, activeAlarm: null, playingChannel: null };
+  web.get('/state', (_req, res) => res.json(state));
+  web.get('/iptv/config', (_req, res) => res.json(config));
+  web.get('/volume/get', (_req, res) => res.json({ success: true, volume }));
+  web.post('/volume/set', (req, res) => { volume = req.body.level; res.json({ success: true, volume }); });
+  web.get('/alarms', (_req, res) => res.json({ alarms: [{ id: 'test', time: '07:30', days: [1,2,3,4,5], motif: 'aurora', volume: 65 }] }));
+  const events = [];
+  server = http.createServer(web); io = new Server(server);
+  io.on('connection', (socket) => {
+    socket.emit('state', state);
+    socket.onAny((name, data) => { events.push({ name, data });
+      if (name === 'playIPTV') { channel = data; state.playingChannel = data; io.emit('state', state); }
+      if (name === 'closeIPTV') { state.playingChannel = null; io.emit('state', state); }
+    });
+  });
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  await window.loadURL(`http://127.0.0.1:${server.address().port}`);
+  await pause(450);
+  await capture('remote-desktop', 1440, 1100);
+  await capture('remote-tablet', 1024, 1100);
+  await capture('remote-phone', 390, 844);
+  await window.webContents.executeJavaScript("document.querySelector('.channel-btn').click();document.querySelector('[data-browser=reload]').click();document.querySelector('[data-key=Tab]').click();document.querySelector('[data-mouse=click]').click();");
+  await pause(200);
+  assert.equal(channel.name, 'F1Net');
+  assert.ok(events.some((event) => event.name === 'remoteBrowser' && event.data.type === 'reload'));
+  assert.ok(events.some((event) => event.name === 'remoteBrowser' && event.data.key === 'Tab'));
+  assert.ok(events.some((event) => event.name === 'remoteMouse' && event.data.type === 'click'));
+  assert.equal(await window.webContents.executeJavaScript("document.querySelector('#currentChannel').textContent"), 'F1Net');
+  await window.webContents.executeJavaScript("document.querySelector('#closeIPTV').click()");
+  await pause();
+  assert.equal(state.playingChannel, null);
+  assert.equal(volume, 42, 'Opening remote never changes volume');
+  assert.deepEqual(errors, [], 'Remote has no uncaught JS errors');
+  console.log('PASS: kiosk/remote responsive rendering, channels, browser commands, click and music/TV priority.');
+  finish();
+}).catch(finish);

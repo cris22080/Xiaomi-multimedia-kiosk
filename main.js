@@ -3,7 +3,7 @@
 // mostra "schermate" diverse (Home, Cozy View, Spotify) gestite lato
 // renderer. Nessuna finestra popup separata.
 
-const { app, BrowserWindow, ipcMain, screen, Menu, shell, powerSaveBlocker } = require("electron");
+const { app, BrowserWindow, WebContentsView, ipcMain, screen, Menu, shell, powerSaveBlocker } = require("electron");
 const path = require("path");
 
 const config = require("./config");
@@ -14,13 +14,16 @@ const remoteServer = require("./modules/remoteServer");
 const spotify = require("./modules/spotify");
 const windowsMediaSession = require("./modules/windowsMediaSession");
 const windowsVolume = require("./modules/windowsVolume");
+const { WebPlayer } = require("./modules/webPlayer");
 
 const alarmManager = require("./modules/alarmManager");
 
 let mainWindow = null;
 let allowQuit = false; // true solo dopo il comando remoto di chiusura
 let spotifyPollTimer = null;
-let remoteCursor = { x: 0, y: 0 };
+let webPlayer = null;
+let activeView = 'home';
+let playingChannel = null;
 let softScreenOn = true;
 let suspensionBlockerId = null;
 let remoteMediaTimeout = null;
@@ -83,7 +86,26 @@ function createMainWindow() {
   mainWindow.webContents.on("did-finish-load", () => {
     mainWindow.webContents.send("screen:softPower", softScreenOn);
   });
+  webPlayer = new WebPlayer({ window: mainWindow, WebContentsView,
+    onStatus: (state) => mainWindow.webContents.send('iptv:webStatus', state) });
+  mainWindow.on('closed', () => { webPlayer.close(); });
   mainWindow.loadFile(path.join(__dirname, "renderer", "index.html"));
+}
+
+function setActiveView(view) {
+  if (!['home', 'cozy', 'iptv', 'spotify', 'alarm'].includes(view)) return;
+  activeView = view;
+  if (view !== 'iptv') {
+    webPlayer?.close();
+    playingChannel = null;
+  }
+  remoteServer.broadcastState();
+}
+
+function syncScreen(on) {
+  softScreenOn = Boolean(on);
+  webPlayer?.setScreenOn(softScreenOn);
+  remoteServer.broadcastState();
 }
 
 function shutdownFromRemote() {
@@ -153,7 +175,7 @@ app.whenReady().then(() => {
 
   // --- Accensione/spegnimento schermo su orario ---
   screenControl.startScheduler(config.screenSchedule, (on) => {
-    softScreenOn = on;
+    syncScreen(on);
     if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send("screen:softPower", on);
   });
 
@@ -172,10 +194,11 @@ app.whenReady().then(() => {
     onToggleCozy: (show) => {
       // When asked to show cozy remotely, ensure OS fullscreen; hiding will only navigate home but keep kiosk fullscreen
       if (mainWindow && show) mainWindow.setFullScreen(true);
+      setActiveView(show ? 'cozy' : 'home');
       mainWindow.webContents.send("nav:goto", show ? "cozy" : "home");
     },
     onScreenPower: (on) => {
-      softScreenOn = Boolean(on);
+      syncScreen(on);
       if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send("screen:softPower", Boolean(on));
       return screenControl.setManualScreenPower(Boolean(on));
     },
@@ -219,35 +242,28 @@ app.whenReady().then(() => {
       }, 12000);
     },
     onPlayIPTV: (data) => {
+      if (!data || typeof data.url !== 'string' || !/^https?:\/\//i.test(data.url)) return;
+      setActiveView('iptv');
+      playingChannel = { name: String(data.name || 'IPTV'), url: data.url, type: data.type === 'web' ? 'web' : 'hls' };
       if (mainWindow) mainWindow.setFullScreen(true);
       mainWindow.webContents.send("nav:goto", "iptv");
       mainWindow.webContents.send("iptv:play", data);
     },
     onRemoteMouse: (action) => {
-      if (!mainWindow || mainWindow.isDestroyed()) return;
-      const bounds = mainWindow.getContentBounds();
-      if (!remoteCursor.x && !remoteCursor.y) {
-        remoteCursor = { x: Math.round(bounds.width / 2), y: Math.round(bounds.height / 2) };
-      }
-      const step = action && action.large ? 90 : 35;
-      if (action && action.type === "move") {
-        remoteCursor.x = Math.max(0, Math.min(bounds.width - 1, remoteCursor.x + (Number(action.dx) || 0) * step));
-        remoteCursor.y = Math.max(0, Math.min(bounds.height - 1, remoteCursor.y + (Number(action.dy) || 0) * step));
-        mainWindow.webContents.sendInputEvent({ type: "mouseMove", x: remoteCursor.x, y: remoteCursor.y });
-      } else if (action && action.type === "click") {
-        mainWindow.webContents.sendInputEvent({ type: "mouseDown", x: remoteCursor.x, y: remoteCursor.y, button: "left", clickCount: 1 });
-        mainWindow.webContents.sendInputEvent({ type: "mouseUp", x: remoteCursor.x, y: remoteCursor.y, button: "left", clickCount: 1 });
-      } else if (action && action.type === "scroll") {
-        mainWindow.webContents.sendInputEvent({ type: "mouseWheel", x: remoteCursor.x, y: remoteCursor.y, deltaX: 0, deltaY: (Number(action.dy) || 0) * 120 });
-      }
+      webPlayer?.mouse(action);
     },
+    onRemoteBrowser: (action) => webPlayer?.browser(action),
     // Remote request to close IPTV overlay and return to home (kiosk remains fullscreen)
     onCloseIPTV: () => {
+      setActiveView('home');
       if (mainWindow) mainWindow.webContents.send("nav:goto", "home");
     },
     onGetState: () => ({
       online: network.isOnline(),
       spotifyConnected: spotify.isAuthenticated(),
+      screenOn: softScreenOn,
+      cozyActive: activeView === 'cozy',
+      playingChannel,
       activeAlarm: alarmManager.getActive()
     }),
     onGetAlarms: () => ({ alarms: alarmManager.list(), motifs: alarmManager.motifs }),
@@ -352,7 +368,8 @@ app.whenReady().then(() => {
   }, config.iptv, { token: config.remote.mediaCompanionToken });
 
   alarmManager.start((alarm) => {
-    softScreenOn = true;
+    syncScreen(true);
+    setActiveView('alarm');
     screenControl.setScreenPower(true);
     if (mainWindow) {
       mainWindow.webContents.send("screen:softPower", true);
@@ -362,7 +379,29 @@ app.whenReady().then(() => {
   });
 
   // --- IPC dal renderer ---
-  ipcMain.on("ui:setScreenPower", (_e, on) => screenControl.setManualScreenPower(on));
+  ipcMain.on("ui:setScreenPower", (_e, on) => {
+    syncScreen(on);
+    mainWindow.webContents.send('screen:softPower', Boolean(on));
+    screenControl.setManualScreenPower(on);
+  });
+
+  const isKiosk = (event) => event.sender === mainWindow.webContents && event.senderFrame === mainWindow.webContents.mainFrame;
+  ipcMain.on('ui:view', (event, view) => { if (isKiosk(event)) setActiveView(view); });
+  ipcMain.on('iptv:channel', (event, channel) => {
+    if (!isKiosk(event)) return;
+    playingChannel = channel && typeof channel.url === 'string'
+      ? { name: String(channel.name || 'IPTV'), url: channel.url, type: channel.type === 'web' ? 'web' : 'hls' } : null;
+    remoteServer.broadcastState();
+  });
+  ipcMain.handle('iptv:webOpen', (event, url) => {
+    if (!isKiosk(event) || activeView !== 'iptv') return { ok: false, error: 'Player non attivo.' };
+    try { return webPlayer.open(url); } catch (error) { return { ok: false, error: error.message }; }
+  });
+  ipcMain.on('iptv:webClose', (event) => { if (isKiosk(event)) webPlayer.close(); });
+  ipcMain.on('iptv:webPresent', (event, presentation) => {
+    if (isKiosk(event) && presentation && typeof presentation === 'object') webPlayer.setPresentation(presentation);
+  });
+  ipcMain.on('iptv:webAction', (event, action) => { if (isKiosk(event)) webPlayer.browser(action); });
   // Allow renderer to request OS-level fullscreen on the BrowserWindow (kiosk) — returns new state
   ipcMain.handle("ui:setAppFullscreen", (_e, on) => {
     try {
@@ -525,6 +564,7 @@ app.on("window-all-closed", () => {
 });
 
 app.on("will-quit", () => {
+  webPlayer?.close();
   if (remoteMediaTimeout) clearTimeout(remoteMediaTimeout);
   if (remoteMediaHideTimeout) clearTimeout(remoteMediaHideTimeout);
   stopSpotifyPolling();

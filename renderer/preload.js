@@ -12,6 +12,8 @@ contextBridge.exposeInMainWorld("cozyDesk", {
 
   // Navigazione (es. da remoto)
   onNavGoto: (cb) => ipcRenderer.on("nav:goto", (_e, view) => cb(view)),
+  reportView: (view) => ipcRenderer.send('ui:view', view),
+  onRemoteCursor: (cb) => ipcRenderer.on('remote:cursor', (_e, point) => cb(point)),
 
   // Schermo
   setScreenPower: (on) => ipcRenderer.send("ui:setScreenPower", on),
@@ -35,6 +37,12 @@ contextBridge.exposeInMainWorld("cozyDesk", {
   // IPTV
   getIPTVConfig: () => ipcRenderer.invoke("iptv:getConfig"),
   onIPTVPlay: (cb) => ipcRenderer.on("iptv:play", (_e, data) => cb(data)),
+  reportChannel: (channel) => ipcRenderer.send('iptv:channel', channel),
+  openWebPlayer: (url) => ipcRenderer.invoke('iptv:webOpen', url),
+  closeWebPlayer: () => ipcRenderer.send('iptv:webClose'),
+  presentWebPlayer: (presentation) => ipcRenderer.send('iptv:webPresent', presentation),
+  webBrowserAction: (action) => ipcRenderer.send('iptv:webAction', action),
+  onWebPlayerStatus: (cb) => ipcRenderer.on('iptv:webStatus', (_e, state) => cb(state)),
 
   // Sveglia
   onAlarmTrigger: (cb) => ipcRenderer.on("alarm:trigger", (_e, alarm) => cb(alarm)),

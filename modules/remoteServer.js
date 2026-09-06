@@ -13,6 +13,10 @@ let io = null;
 let iptvConfigRef = null;
 let mainHandlers = null;
 
+function broadcastState() {
+  if (io && mainHandlers) io.emit('state', mainHandlers.onGetState());
+}
+
 function start(port, handlers, config, companionConfig = {}) {
   mainHandlers = handlers;
   iptvConfigRef = config;
@@ -130,6 +134,9 @@ function start(port, handlers, config, companionConfig = {}) {
     socket.on("remoteMouse", (action) => {
       if (typeof handlers.onRemoteMouse === "function") handlers.onRemoteMouse(action || {});
     });
+    socket.on('remoteBrowser', (action) => {
+      if (typeof handlers.onRemoteBrowser === 'function') handlers.onRemoteBrowser(action || {});
+    });
     
     // Remote command to close IPTV overlay (useful for kiosk without keyboard)
     socket.on("closeIPTV", () => {
@@ -149,4 +156,4 @@ function start(port, handlers, config, companionConfig = {}) {
   return server;
 }
 
-module.exports = { start };
+module.exports = { start, broadcastState };

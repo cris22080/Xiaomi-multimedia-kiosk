@@ -1,5 +1,37 @@
 # Cozy Desk
 
+## Interfaccia e telecomando aggiornati
+
+Il kiosk e il telecomando condividono il nuovo tema scuro. La Home dà più
+spazio alla centralina Arduino; il telecomando dispone le sezioni su una,
+due o tre colonne in base alla larghezza dello schermo.
+
+Per F1Net: apri **TV & Live → Sport → F1Net**, quindi usa **Navigazione**.
+Trascina sul touchpad per spostare il cursore, tocca per cliccare; restano
+disponibili frecce, passo veloce, scorrimento, Indietro, Ricarica, Tab,
+Invio ed Esc. **Chiudi player** torna alla Home. La pagina web è isolata
+dalle funzioni del kiosk; nessuna modifica a IP, companion Spotify o Arduino.
+La copertina automatica non copre più una sessione TV in corso.
+
+Dopo aver copiato gli aggiornamenti sullo Xiaomi, riavvia Cozy Desk. Se lo
+avvii dai sorgenti, usa `npm.cmd start`. Se usi una versione installata,
+ricompila/reinstalla la versione ARM64. Ricarica anche la pagina del
+telecomando (su PC: Ctrl+F5). Non servono nuove dipendenze.
+
+Verifiche locali per lo sviluppo:
+
+```powershell
+npm.cmd test
+npm.cmd run test:input
+npm.cmd run test:ui
+```
+
+I test Electron usano pagine locali, profili temporanei e dati fittizi:
+non avviano il kiosk reale, non cambiano la luminosità e non inviano
+comandi ad Arduino. Gli screenshot di verifica sono salvati nella cartella
+temporanea indicata dal test. La disponibilità della diretta F1Net e la
+compatibilità del sito con lo Xiaomi richiedono una prova sul dispositivo.
+
 App desktop per Windows ARM64 (Electron), **una sola finestra sempre in
 primo piano** con tre "schermate" interne (non finestre separate):
 

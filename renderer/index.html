@@ -1,456 +1,75 @@
 <!DOCTYPE html>
-<html lang="it">
-<head>
-<meta charset="UTF-8">
-<title>Cozy Desk</title>
-<style>
-  :root {
-    /* New palette: moody indigo + warm magenta / cyan gradient */
-    --bg-a: #0f1724;
-    --bg-b: #071022;
-    --panel: rgba(255,255,255,0.04);
-    --panel-border: rgba(255,255,255,0.06);
-    --accent: #ff7aa2;
-    --accent-2: #6dd3ff;
-    --accent-grad: linear-gradient(135deg, #ff7aa2 0%, #6dd3ff 100%);
-    --accent-soft: rgba(255,122,162,0.14);
-    --green: #7ee787;
-    --text: #eef2ff;
-    --muted: #9aa3b2;
-    --glass-blur: 18px;
-    --card-radius: 18px;
-  }
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { margin:0; height:100%; background:
-      radial-gradient(circle at 20% 15%, #1a2033 0%, transparent 45%),
-      radial-gradient(circle at 85% 85%, #1a1a2e 0%, transparent 50%),
-      linear-gradient(160deg, var(--bg-a), var(--bg-b));
-      color:var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
-      overflow:hidden; }
-
-  #app { display:flex; height:100vh; }
-
-  /* --- Sidebar --- */
-  #sidebar { width: clamp(64px, 6.5vw, 100px); background:var(--panel);
-             backdrop-filter: blur(20px); border-right:1px solid var(--panel-border);
-             display:flex; flex-direction:column; align-items:center;
-             padding: 2.2vh 0; gap: 1.4vh; -webkit-app-region: drag; }
-  .nav-btn { -webkit-app-region:no-drag; width: clamp(42px,4.6vw,60px); height: clamp(42px,4.6vw,60px);
-             border:none; border-radius: 16px; background:transparent; color:var(--muted);
-             font-size: clamp(16px, 1.8vw, 22px); cursor:pointer;
-             display:flex; align-items:center; justify-content:center;
-             transition: background .2s, color .2s; }
-  .nav-btn.active { background: var(--accent-grad); color:#061426;
-                     box-shadow: 0 14px 40px -18px rgba(20,30,60,0.6), 0 8px 30px -12px var(--accent-soft);
-                     transform: translateY(-4px) scale(1.06);
-                     transition: transform .25s, box-shadow .25s, background .25s; }
-
-  /* --- Content --- */
-  #content { flex:1; position:relative; }
-  .view { position:absolute; inset:0; display:none; }
-  .view.active { display:flex; }
-
-  #netPill { position:absolute; top: 2vh; right: 2vw; padding: .5vh 1.4vw; border-radius:999px;
-             font-size: clamp(10px, 1vw, 13px); background:var(--panel); backdrop-filter: blur(12px);
-             border:1px solid var(--panel-border); z-index:5; }
-  #netPill.offline { background: rgba(161,58,58,0.35); }
-
-  /* ============================================================
-     HOME
-     ============================================================ */
-  #homeLeft { flex:1 1 56%; display:flex; flex-direction:column;
-              align-items:center; justify-content:center; gap: 1vh; }
-  #clock { font-size: clamp(56px, 11vw, 150px); font-weight:200; letter-spacing:-2px;
-           font-variant-numeric: tabular-nums; line-height:1; }
-  #dateLine { color:var(--muted); font-size: clamp(13px, 1.6vw, 20px); font-weight:500;
-              letter-spacing:.5px; text-transform:capitalize; }
-
-  #homeRight { flex:1 1 44%; display:flex; flex-direction:column; justify-content:center;
-               gap: 2vh; padding: 3vh 3vw 3vh 0; }
-
-  .statRow { display:flex; gap: 1.4vw; }
-  .stat-card { flex:1; background:var(--panel); border:1px solid var(--panel-border);
-               border-radius: 20px; padding: 2vh 1.6vw; backdrop-filter: blur(16px); }
-  .stat-card .label { color:var(--muted); font-size: clamp(10px,1vw,13px); text-transform:uppercase;
-                       letter-spacing:1.5px; }
-  .stat-card .value { font-size: clamp(24px,3.4vw,42px); font-weight:600; margin-top:.6vh; }
-
-  .statusGrid { display:grid; grid-template-columns: 1fr 1fr; gap: 1.2vh 1.2vw; }
-  .status-pill { background:var(--panel); border:1px solid var(--panel-border); border-radius:18px;
-                 padding: 1.6vh 1.4vw; display:flex; align-items:center; gap: 1vw;
-                 backdrop-filter: blur(16px); }
-  .status-dot { width: clamp(10px,1vw,14px); height: clamp(10px,1vw,14px); border-radius:50%;
-                background:#4a4f5c; flex-shrink:0; box-shadow: 0 0 0 4px transparent; transition: all .25s; }
-  .status-pill.on .status-dot { background: var(--green); box-shadow: 0 0 0 4px rgba(52,211,153,0.18); }
-  .status-pill .info { display:flex; flex-direction:column; }
-  .status-pill .name { font-size: clamp(12px,1.2vw,15px); font-weight:600; }
-  .status-pill .state { font-size: clamp(10px,0.95vw,12px); color:var(--muted); }
-  .status-pill.on .state { color: var(--green); }
-
-  /* ============================================================
-     COZY
-     ============================================================ */
-  /* Fullscreen overlay styles for cozy and iptv views */
-  #view-cozy { background:#000; }
-  /* When cozy or iptv views are active they become full-window overlays and hide the sidebar */
-  #view-cozy.active, #view-iptv.active { position:fixed; inset:0; z-index:9999; display:flex; flex-direction:column; }
-  body.fullscreen-view #sidebar { display:none; }
-  #view-cozy video, #view-iptv video { width:100% !important; height:100% !important; object-fit:cover !important; }
-
-  /* ============================================================
-     SPOTIFY
-     ============================================================ */
-  #view-spotify { flex-direction:column; }
-  #spotifyTop { flex:1; display:flex; padding: 3vh 3vw; gap: 2.4vw; overflow:hidden; }
-
-  #spotifyLoginBox { margin:auto; display:flex; flex-direction:column;
-                      align-items:center; gap: 1.6vh; }
-  #spotifyLoginBox p { color:var(--muted); font-size: clamp(13px,1.3vw,16px); }
-  #spotifyLoginBox button { padding: 1.6vh 2.2vw; border:none; border-radius:999px; background:#1DB954;
-                             color:#04140b; font-weight:700; font-size: clamp(13px,1.3vw,15px);
-                             cursor:pointer; box-shadow: 0 8px 20px -6px rgba(29,185,84,0.5); }
-
-  #spotifyMain { display:none; flex:1; gap: 2.4vw; }
-
-  #nowPlayingBox { flex:0 0 clamp(180px,24vw,280px); display:flex; flex-direction:column;
-                   align-items:center; gap: 1.6vh; text-align:center; }
-  #npArt { width:100%; aspect-ratio:1/1; border-radius:22px; object-fit:cover;
-           background:var(--panel); box-shadow: 0 16px 40px -14px rgba(0,0,0,.6); }
-  #npTitle { font-size: clamp(15px,1.7vw,20px); font-weight:700; }
-  #npArtist { color:var(--muted); font-size: clamp(12px,1.2vw,14px); }
-
-  #listBox { flex:1; background:var(--panel); border:1px solid var(--panel-border);
-             border-radius:22px; padding: 1.8vh 1.4vw; overflow-y:auto;
-             display:flex; flex-direction:column; gap: 1vh; backdrop-filter: blur(16px); }
-  #backToPlaylists { align-self:flex-start; background:none; border:none; color:var(--accent);
-                      cursor:pointer; font-size: clamp(11px,1.1vw,13px); padding: 0 0 .6vh; display:none; }
-  .playlist-row { display:flex; align-items:center; gap: 1vw; background: rgba(255,255,255,0.035);
-                  border-radius:14px; padding: 1vh 1vw; cursor:pointer; transition: background .15s; }
-  .playlist-row:hover { background: rgba(255,255,255,0.07); }
-  .playlist-row img { width: clamp(36px,3.6vw,48px); height: clamp(36px,3.6vw,48px);
-                       border-radius:10px; object-fit:cover; }
-  .playlist-row .name { font-weight:600; font-size: clamp(12px,1.2vw,14px); }
-  .playlist-row .count { color:var(--muted); font-size: clamp(10px,1vw,11px); }
-  .track-row { display:flex; justify-content:space-between; padding: .9vh 1vw;
-               background: rgba(255,255,255,0.035); border-radius:12px;
-               font-size: clamp(12px,1.15vw,13px); }
-  .track-row .dur { color:var(--muted); }
-
-  #progressBar { flex:0 0 clamp(64px,9vh,90px); display:flex; align-items:center; gap: 1.4vw;
-                  padding: 0 3vw; border-top:1px solid var(--panel-border); background: var(--panel);
-                  backdrop-filter: blur(20px); }
-  #playIcon { width: clamp(34px,4vw,48px); height: clamp(34px,4vw,48px); border-radius:50%;
-              background: var(--accent-grad); display:flex; align-items:center; justify-content:center;
-              font-size: clamp(13px,1.4vw,18px); flex-shrink:0;
-              box-shadow: 0 18px 50px -28px rgba(110,20,90,0.45), 0 6px 20px -6px var(--accent-soft);
-              color:#fff; }
-  #progressTrack { flex:1; height:5px; background: rgba(255,255,255,0.08); border-radius:999px; position:relative; }
-  #progressFill { height:100%; background:#1DB954; border-radius:999px; width:0%; transition: width .4s linear; }
-  #timeCur, #timeDur { font-size: clamp(10px,1vw,12px); color:var(--muted); width:3.2em; }
-  #timeDur { text-align:right; }
-
-  /* Now Playing automatico, ispirato alla vista a tutto schermo di Apple Music. */
-  #spotifyAutoNowPlaying { display:none; position:fixed; inset:0; z-index:10010; overflow:hidden;
-    color:#fff; background:#07101b; isolation:isolate; cursor:pointer; }
-  #spotifyAutoNowPlaying.visible { display:flex; align-items:center; justify-content:center; }
-  #autoNpBackdrop { position:absolute; inset:-8%; z-index:-2; background:center/cover no-repeat;
-    filter:blur(55px) saturate(1.35); transform:scale(1.14); opacity:.72; transition:background-image .5s ease; }
-  #spotifyAutoNowPlaying::after { content:""; position:absolute; inset:0; z-index:-1;
-    background:linear-gradient(180deg,rgba(3,8,18,.22),rgba(3,8,18,.72)); }
-  #autoNpContent { width:min(88vw,1080px); display:grid; grid-template-columns:minmax(260px,46vh) minmax(300px,1fr);
-    align-items:center; gap:clamp(34px,6vw,90px); }
-  #autoNpArt { width:100%; aspect-ratio:1; object-fit:cover; border-radius:clamp(18px,2.2vw,34px);
-    box-shadow:0 32px 90px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.2); }
-  #autoNpInfo { min-width:0; text-shadow:0 2px 22px rgba(0,0,0,.55); }
-  #autoNpDevice { font-size:clamp(11px,1.2vw,15px); font-weight:750; letter-spacing:.16em;
-    text-transform:uppercase; opacity:.72; margin-bottom:2vh; }
-  #autoNpTitle { font-size:clamp(34px,5.5vw,78px); font-weight:820; line-height:1.02;
-    letter-spacing:-.045em; overflow-wrap:anywhere; }
-  #autoNpArtist { margin-top:1.4vh; font-size:clamp(18px,2.2vw,32px); opacity:.8; }
-  #autoNpProgress { height:7px; margin-top:5vh; border-radius:999px; background:rgba(255,255,255,.25); overflow:hidden; }
-  #autoNpProgressFill { height:100%; width:0; border-radius:inherit; background:#fff; transition:width .7s linear; }
-  #autoNpTimes { display:flex; justify-content:space-between; margin-top:1vh; font-size:clamp(11px,1vw,14px); opacity:.65; }
-  #autoNpHint { position:absolute; right:2.2vw; bottom:2.5vh; font-size:12px; opacity:.5; }
-  @media (max-width:720px) {
-    #autoNpContent { width:min(82vw,520px); grid-template-columns:1fr; gap:3vh; text-align:center; }
-    #autoNpArt { width:min(62vw,42vh); justify-self:center; }
-    #autoNpTitle { font-size:clamp(28px,8vw,50px); }
-  }
-
-  .empty-state { text-align:center; opacity:.5; padding:20px; font-size:12px; }
-
-  /* Shared visual language with the mobile remote: warm editorial surfaces
-     and tactile controls, adapted to the desktop layout. */
-  :root { --bg-a:#f4efe6; --bg-b:#e6f2e8; --panel:#fffaf1; --panel-border:#1b2c25; --accent:#ee6434; --accent-2:#ffc72c; --accent-grad:linear-gradient(135deg,#ee6434,#f58c48); --accent-soft:rgba(238,100,52,.18); --green:#2e9c73; --text:#17251f; --muted:#65736b; --card-radius:10px; }
-  html,body { background:radial-gradient(circle at 90% 14%,rgba(255,199,44,.7) 0,transparent 22%),radial-gradient(circle at 15% 88%,rgba(103,189,151,.28) 0,transparent 31%),var(--bg-a); color:var(--text); font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; }
-  #sidebar { width:clamp(76px,7vw,108px); background:#fffaf1; border-right:2px solid var(--panel-border); backdrop-filter:none; padding:2vh 0; gap:1.7vh; }
-  #sidebar::before { content:"C"; display:grid; place-items:center; width:42px; height:42px; margin:0 0 2vh; border:2px solid var(--text); border-radius:50%; background:var(--accent-2); color:var(--text); font:800 26px/1 Georgia,serif; }
-  .nav-btn { width:clamp(46px,4.8vw,62px); height:clamp(46px,4.8vw,62px); border:2px solid transparent; border-radius:8px; color:var(--text); font-size:clamp(18px,2vw,25px); }
-  .nav-btn.active { background:var(--accent-2); color:var(--text); border-color:var(--text); box-shadow:4px 4px 0 var(--text); transform:none; }
-  #content::before { content:"COZY DESK / CONTROL ROOM"; position:absolute; left:3vw; top:2.2vh; z-index:4; color:var(--muted); font:800 clamp(9px,.85vw,12px)/1 ui-monospace,SFMono-Regular,Consolas,monospace; letter-spacing:1.5px; }
-  #netPill { top:2vh; right:2.5vw; padding:.75vh 1vw; border:2px solid var(--text); border-radius:4px; background:var(--text); color:#fffaf1; backdrop-filter:none; font:800 clamp(9px,.8vw,11px)/1 ui-monospace,SFMono-Regular,Consolas,monospace; letter-spacing:.5px; }
-  #netPill.offline { background:#a3372c; color:#fff; }
-  #homeLeft { flex:0 0 70%; align-items:flex-start; padding-left:clamp(28px,5vw,78px); }
-  #clock { font-family:Georgia,"Times New Roman",serif; font-size:clamp(96px,15.5vw,238px); font-weight:800; letter-spacing:-.085em; color:var(--text); }
-  #dateLine { color:var(--muted); font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:clamp(12px,1.3vw,17px); font-weight:800; letter-spacing:1px; }
-  #homeRight { flex:0 0 30%; gap:1.4vh; padding-right:clamp(24px,3vw,48px); }
-  .statRow { gap:1.2vw; }
-  .stat-card,.status-pill { background:var(--panel); border:2px solid var(--panel-border); border-radius:9px; backdrop-filter:none; box-shadow:5px 5px 0 rgba(23,37,31,.9); }
-  .stat-card { padding:2.3vh 1.6vw; }
-  .stat-card .label { color:var(--muted); font:800 clamp(9px,.8vw,11px)/1 ui-monospace,SFMono-Regular,Consolas,monospace; letter-spacing:1.2px; }
-  .stat-card .value { color:var(--accent); font-family:Georgia,"Times New Roman",serif; font-size:clamp(34px,4.6vw,64px); font-weight:900; letter-spacing:-.06em; line-height:.95; }
-  .statusGrid { gap:1.2vh 1vw; }
-  .status-pill { border-radius:7px; padding:1.5vh 1.3vw; box-shadow:3px 3px 0 rgba(23,37,31,.85); }
-  .status-pill.clickable:active { transform:translate(3px,3px); box-shadow:none; }
-  .status-dot { border:2px solid var(--text); border-radius:3px; background:#d0d3c9; }
-  .status-pill.on .status-dot { background:var(--green); box-shadow:none; }
-  .status-pill .name { font-family:Georgia,"Times New Roman",serif; font-size:clamp(13px,1.25vw,16px); font-weight:800; }
-  .status-pill .state,.status-pill.on .state { color:var(--muted); font:800 clamp(9px,.8vw,11px)/1.2 ui-monospace,SFMono-Regular,Consolas,monospace; }
-  #spotifyTop { padding:6vh 3vw 3vh; }
-  #spotifyLoginBox button { border:2px solid var(--text); border-radius:7px; background:var(--accent-2); color:var(--text); box-shadow:4px 4px 0 var(--text); }
-  #npArt { border:2px solid var(--text); border-radius:9px; box-shadow:7px 7px 0 var(--text); }
-  #npTitle { font-family:Georgia,"Times New Roman",serif; }
-  #listBox { background:var(--panel); border:2px solid var(--text); border-radius:9px; backdrop-filter:none; box-shadow:5px 5px 0 var(--text); }
-  #backToPlaylists { color:var(--accent); font-weight:800; }
-  .playlist-row,.track-row { background:#f2eadc; border:1px solid rgba(23,37,31,.18); border-radius:6px; }
-  .playlist-row:hover { background:#ffe8c9; }
-  #progressBar { border-top:2px solid var(--text); background:#fffaf1; backdrop-filter:none; }
-  #playIcon { border:2px solid var(--text); border-radius:6px; background:var(--accent-2); color:var(--text); box-shadow:3px 3px 0 var(--text); }
-  #progressTrack { background:#ded5c6; border-radius:0; }
-  #progressFill { background:var(--accent); border-radius:0; }
-  #timeCur,#timeDur { color:var(--muted); font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-weight:800; }
-
-  /* Glass control room — final responsive skin */
-  :root { --glass:rgba(16,27,49,.58); --glass-strong:rgba(19,34,61,.78); --glass-line:rgba(255,255,255,.16); --glow-cyan:#72e6ff; --glow-violet:#a78bfa; --glow-pink:#ff8fbd; --text:#f4f8ff; --muted:#a8b5ca; --green:#67e8a5; --accent:#72e6ff; --accent-2:#a78bfa; --panel:var(--glass); --panel-border:var(--glass-line); --accent-grad:linear-gradient(135deg,#72e6ff,#a78bfa 58%,#ff8fbd); }
-  html,body { background:#07101f; color:var(--text); font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; }
-  body::before,body::after { content:""; position:fixed; width:48vw; aspect-ratio:1; border-radius:50%; filter:blur(90px); opacity:.28; pointer-events:none; }
-  body::before { left:4vw; bottom:-29vw; background:#29d3a2; }
-  body::after { right:-14vw; top:-27vw; background:#745cff; }
-  #app { position:relative; isolation:isolate; background:radial-gradient(circle at 78% 18%,rgba(87,105,255,.2),transparent 32%),radial-gradient(circle at 18% 82%,rgba(44,211,166,.14),transparent 34%),linear-gradient(145deg,#081323,#0b1020 55%,#11162c); }
-  #sidebar { width:clamp(74px,6.4vw,96px); margin:14px 0 14px 14px; height:calc(100vh - 28px); padding:18px 0; gap:12px; border:1px solid var(--glass-line); border-radius:26px; background:rgba(14,25,46,.56); box-shadow:0 24px 80px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.13); backdrop-filter:blur(28px) saturate(145%); }
-  #sidebar::before { width:44px;height:44px;margin:0 0 18px;border:1px solid rgba(255,255,255,.28);border-radius:15px;background:linear-gradient(145deg,rgba(114,230,255,.95),rgba(167,139,250,.88));color:#081323;box-shadow:0 10px 26px rgba(92,154,255,.3);font-family:Inter,sans-serif;font-size:22px; }
-  .nav-btn { border:1px solid transparent; border-radius:16px; color:#aebbd0; }
-  .nav-btn:hover { background:rgba(255,255,255,.07); color:#fff; }
-  .nav-btn.active { border-color:rgba(255,255,255,.23); border-radius:16px; background:linear-gradient(135deg,rgba(114,230,255,.92),rgba(167,139,250,.9)); color:#07101f; box-shadow:0 12px 30px rgba(81,126,255,.28),inset 0 1px 0 rgba(255,255,255,.5); }
-  #content::before { left:3.4vw;top:2.8vh;color:#a8b5ca;font-size:clamp(9px,.8vw,12px);letter-spacing:2px; }
-  #netPill { top:2.2vh;right:2.2vw;border:1px solid var(--glass-line);border-radius:999px;background:rgba(14,25,46,.66);color:#c9fbe7;box-shadow:0 10px 35px rgba(0,0,0,.25);backdrop-filter:blur(20px); }
-  #view-home { align-items:stretch; gap:clamp(22px,3vw,54px); padding:clamp(76px,9vh,108px) clamp(28px,3.5vw,70px) clamp(28px,5vh,60px); }
-  #homeLeft { flex:0 1 52%; align-items:flex-start; justify-content:center; padding:0; }
-  #clock { font-family:Inter,ui-sans-serif,sans-serif;font-size:clamp(92px,13.2vw,205px);font-weight:750;letter-spacing:-.085em;line-height:.84;background:linear-gradient(125deg,#fff 15%,#bdefff 50%,#c8b9ff 88%);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 18px 70px rgba(92,177,255,.16); }
-  #dateLine { margin-top:26px;padding:10px 16px;border:1px solid var(--glass-line);border-radius:999px;background:rgba(255,255,255,.055);color:#c4cfe0;backdrop-filter:blur(16px);font-family:Inter,sans-serif;font-size:clamp(12px,1.15vw,17px);letter-spacing:.5px;text-transform:capitalize; }
-  #homeRight { flex:1 1 48%; align-self:center; min-width:0; gap:clamp(14px,2vh,22px); padding:clamp(22px,2.4vw,38px); border:1px solid var(--glass-line); border-radius:30px; background:linear-gradient(145deg,rgba(25,42,72,.66),rgba(12,24,45,.5)); box-shadow:0 28px 80px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.14); backdrop-filter:blur(30px) saturate(150%); }
-  .statRow { gap:clamp(12px,1.4vw,22px); }
-  .stat-card,.status-pill { border:1px solid var(--glass-line);border-radius:20px;background:linear-gradient(145deg,rgba(255,255,255,.105),rgba(255,255,255,.045));box-shadow:0 16px 38px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.12);backdrop-filter:blur(18px); }
-  .stat-card { min-height:clamp(132px,19vh,190px);padding:clamp(20px,2.5vh,30px) clamp(18px,1.8vw,28px);display:flex;flex-direction:column;justify-content:space-between; }
-  .stat-card .label { color:#b9c7db;font-family:Inter,sans-serif;font-size:clamp(10px,.9vw,13px);font-weight:700;letter-spacing:1.6px; }
-  .stat-card .value { color:#fff;font-family:Inter,sans-serif;font-size:clamp(44px,5.3vw,80px);font-weight:750;letter-spacing:-.065em;text-shadow:0 8px 30px rgba(114,230,255,.22); }
-  .statusGrid { gap:clamp(11px,1.4vh,18px) clamp(11px,1vw,16px); }
-  .status-pill { min-height:clamp(76px,10.5vh,112px);padding:clamp(15px,1.8vh,23px) clamp(14px,1.5vw,24px);box-shadow:0 12px 30px rgba(0,0,0,.16);transition:transform .18s,background .18s,border-color .18s; }
-  .status-pill.clickable:hover { transform:translateY(-2px);background:rgba(255,255,255,.12);border-color:rgba(114,230,255,.38); }
-  .status-pill.clickable:active { transform:scale(.98);box-shadow:0 8px 20px rgba(0,0,0,.2); }
-  .status-dot { width:15px;height:15px;border:1px solid rgba(255,255,255,.3);border-radius:50%;background:#526078;box-shadow:0 0 0 5px rgba(255,255,255,.035); }
-  .status-pill.on .status-dot { background:var(--green);box-shadow:0 0 0 5px rgba(103,232,165,.11),0 0 20px rgba(103,232,165,.45); }
-  .status-pill .name { color:#f7f9ff;font-family:Inter,sans-serif;font-size:clamp(14px,1.25vw,18px);font-weight:700; }
-  .status-pill .state,.status-pill.on .state { margin-top:5px;color:#9faec3;font-family:Inter,sans-serif;font-size:clamp(10px,.9vw,13px);font-weight:600; }
-  #spotifyTop { padding:8vh 4vw 4vh; }
-  #listBox,#npArt { border:1px solid var(--glass-line);border-radius:24px;background:var(--glass);box-shadow:0 24px 70px rgba(0,0,0,.3);backdrop-filter:blur(26px); }
-  #progressBar { border-top:1px solid var(--glass-line);background:rgba(10,20,38,.7);backdrop-filter:blur(26px); }
-  @media (max-width:900px) { #view-home{gap:20px;padding-inline:26px} #homeLeft{flex-basis:46%} #homeRight{flex-basis:54%;padding:20px} .stat-card{min-height:120px}.status-pill{min-height:72px} }
-
-  /* Dark skeuomorphism — tactile controls and deep, quiet contrast. */
-  :root { --neo-bg:#111722;--neo-surface:#171f2c;--neo-dark:#080c13;--neo-light:#293548;--neo-cyan:#62dfd1;--neo-coral:#ff6d5f;--neo-lime:#b8e86e;--neo-violet:#9b82ff;--text:#eef3f8;--muted:#8995a5;--green:var(--neo-cyan);--accent:var(--neo-cyan);--accent-2:var(--neo-violet);--panel:var(--neo-surface);--panel-border:rgba(255,255,255,.055);--accent-grad:linear-gradient(135deg,var(--neo-cyan),var(--neo-violet)); }
-  html,body { background:var(--neo-bg);color:var(--text); }
-  body::before,body::after { display:none; }
-  #app { background:radial-gradient(circle at 72% 16%,rgba(98,223,209,.055),transparent 25%),linear-gradient(145deg,#121925,#0e141e); }
-  #sidebar { width:clamp(78px,6.8vw,102px);margin:18px 0 18px 18px;height:calc(100vh - 36px);padding:20px 0;gap:16px;border:0;border-radius:30px;background:var(--neo-surface);box-shadow:14px 14px 30px var(--neo-dark),-8px -8px 22px var(--neo-light),inset 1px 1px 1px rgba(255,255,255,.055);backdrop-filter:none; }
-  #sidebar::before { width:48px;height:48px;margin-bottom:22px;border:0;border-radius:17px;background:linear-gradient(145deg,#202b3b,#131a25);color:var(--neo-cyan);box-shadow:7px 7px 14px #0a0e15,-5px -5px 12px #293548,inset 1px 1px 1px rgba(255,255,255,.07); }
-  .nav-btn { border:0;border-radius:18px;background:linear-gradient(145deg,#1b2533,#131a25);color:#7f8b9b;box-shadow:6px 6px 13px #090d14,-4px -4px 11px #283446;transition:transform .15s,box-shadow .15s,color .15s; }
-  .nav-btn:hover { background:linear-gradient(145deg,#1b2533,#131a25);color:#dce5ef; }
-  .nav-btn:active,.nav-btn.active { transform:translateY(1px);color:var(--neo-cyan);background:#141c28;box-shadow:inset 5px 5px 11px #090d14,inset -4px -4px 10px #273244,0 0 20px rgba(98,223,209,.08); }
-  #content::before { color:#657183; }
-  #netPill { border:0;border-radius:16px;background:#141c27;color:var(--neo-cyan);box-shadow:inset 4px 4px 9px #090d14,inset -3px -3px 8px #273244;padding:10px 16px;backdrop-filter:none; }
-  #view-home { gap:clamp(30px,4vw,72px); }
-  #clock { color:#e8edf3;background:none;-webkit-text-fill-color:initial;text-shadow:8px 8px 16px #090d14,-5px -5px 14px rgba(52,66,87,.65);font-weight:720; }
-  #dateLine { border:0;border-radius:17px;background:var(--neo-surface);color:#9aa6b6;box-shadow:inset 4px 4px 10px #090d14,inset -3px -3px 9px #293548;padding:12px 18px; }
-  #homeRight { border:0;border-radius:34px;background:var(--neo-surface);box-shadow:18px 18px 38px #080c13,-10px -10px 28px #263143,inset 1px 1px 1px rgba(255,255,255,.045);backdrop-filter:none; }
-  .stat-card,.status-pill { border:0;background:linear-gradient(145deg,#1c2635,#131a25);box-shadow:8px 8px 17px #090d14,-5px -5px 14px #283446,inset 1px 1px 1px rgba(255,255,255,.045);backdrop-filter:none; }
-  .stat-card { border-radius:25px; }
-  .stat-card:first-child .value { color:var(--neo-coral); }
-  .stat-card:last-child .value { color:var(--neo-cyan); }
-  .stat-card .value { text-shadow:0 0 22px currentColor; }
-  .status-pill { border-radius:20px; }
-  .status-pill.clickable:hover { transform:translateY(-2px);background:linear-gradient(145deg,#202b3b,#141b27); }
-  .status-pill.clickable:active { transform:translateY(1px);box-shadow:inset 5px 5px 11px #090d14,inset -4px -4px 10px #273244; }
-  .status-dot { border:0;background:#556174;box-shadow:inset 2px 2px 4px #252c38,inset -1px -1px 3px #758297; }
-  .status-pill.on .status-dot { background:var(--neo-lime);box-shadow:0 0 14px rgba(184,232,110,.65),inset 1px 1px 2px #e8ffbb; }
-  #spotifyLoginBox button,#backToPlaylists,.playlist-row,.track-row { border:0;background:linear-gradient(145deg,#1c2635,#131a25);box-shadow:7px 7px 15px #090d14,-4px -4px 12px #283446;color:var(--text); }
-  #listBox,#npArt { border:0;border-radius:26px;background:var(--neo-surface);box-shadow:14px 14px 32px #080c13,-8px -8px 22px #263143;backdrop-filter:none; }
-  #progressBar { border:0;background:#121925;box-shadow:inset 0 5px 12px #080c13;backdrop-filter:none; }
-  #progressTrack { height:8px;background:#101620;box-shadow:inset 3px 3px 6px #080b11,inset -2px -2px 5px #253043; }
-  #progressFill { background:linear-gradient(90deg,var(--neo-cyan),var(--neo-violet)); }
-  #playIcon { background:linear-gradient(145deg,#202b3b,#131a25);color:var(--neo-cyan);box-shadow:6px 6px 13px #090d14,-4px -4px 10px #293548; }
-</style>
-</head>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Cozy Desk</title><link rel="stylesheet" href="kiosk.css"></head>
 <body>
-  <div id="softScreenOff" aria-hidden="true" style="display:none;position:fixed;inset:0;z-index:2147483647;background:#000;cursor:none;"></div>
-  <div id="spotifyAutoNowPlaying" aria-hidden="true" title="Tocca per chiudere">
-    <div id="autoNpBackdrop"></div>
-    <div id="autoNpContent">
-      <img id="autoNpArt" alt="Copertina del brano">
-      <div id="autoNpInfo">
-        <div id="autoNpDevice">Spotify</div>
-        <div id="autoNpTitle">--</div>
-        <div id="autoNpArtist">--</div>
-        <div id="autoNpProgress"><div id="autoNpProgressFill"></div></div>
-        <div id="autoNpTimes"><span id="autoNpTimeCur">0:00</span><span id="autoNpTimeDur">0:00</span></div>
+<svg class="icon-library" aria-hidden="true"><defs><symbol id="i-home" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10H3z"/><path d="M9 20v-7h6v7"/></symbol><symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14A8 8 0 0 1 10 4a8 8 0 1 0 10 10Z"/></symbol><symbol id="i-tv" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="14" rx="3"/><path d="m8 2 4 4 4-4M8 16h8"/></symbol><symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18V5l11-2v13M9 8l11-2"/><ellipse cx="6" cy="18" rx="3" ry="2.5"/><ellipse cx="17" cy="16" rx="3" ry="2.5"/></symbol><symbol id="i-temp" viewBox="0 0 24 24"><path d="M9 14V5a3 3 0 0 1 6 0v9a5 5 0 1 1-6 0Z"/><path d="M12 9v9"/></symbol><symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 3C9 8 5 11 5 15a7 7 0 0 0 14 0c0-4-4-7-7-12Z"/></symbol><symbol id="i-fan" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M10 10C3 0 19 0 14 10M14 11c12-1 5 13-1 3M11 14c-5 11-12-3-1-3"/></symbol><symbol id="i-light" viewBox="0 0 24 24"><path d="M8 16c0-3-3-3-3-7a7 7 0 0 1 14 0c0 4-3 4-3 7M8 16h8M9 20h6M10 23h4"/></symbol><symbol id="i-lamp" viewBox="0 0 24 24"><path d="M7 4h10l4 11H3ZM12 15v6M8 21h8"/></symbol><symbol id="i-auto" viewBox="0 0 24 24"><path d="m13 2-9 12h7l-1 8 10-13h-7z"/></symbol><symbol id="i-wifi" viewBox="0 0 24 24"><path d="M2 8a16 16 0 0 1 20 0M5 12a11 11 0 0 1 14 0M8 16a6 6 0 0 1 8 0"/><circle cx="12" cy="20" r="1"/></symbol><symbol id="i-back" viewBox="0 0 24 24"><path d="m10 5-7 7 7 7M3 12h18"/></symbol><symbol id="i-reload" viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5 8a8 8 0 0 1 14-2l1 6M4 12l1 6a8 8 0 0 0 14-2"/></symbol><symbol id="i-play" viewBox="0 0 24 24"><path d="m8 4 12 8-12 8z"/></symbol><symbol id="i-volume" viewBox="0 0 24 24"><path d="M4 9h4l5-5v16l-5-5H4zM17 8a6 6 0 0 1 0 8M20 5a10 10 0 0 1 0 14"/></symbol><symbol id="i-alarm" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 8v5l3 2M3 5l3-3M18 2l3 3M5 20l-2 2M19 20l2 2"/></symbol><symbol id="i-power" viewBox="0 0 24 24"><path d="M12 2v10M6 5a9 9 0 1 0 12 0"/></symbol><symbol id="i-arrow" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol><symbol id="i-mouse" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="6"/><path d="M12 6v4"/></symbol></defs></svg>
+<div id="softScreenOff"></div>
+<div id="spotifyAutoNowPlaying" aria-hidden="true">
+  <div id="autoNpBackdrop"></div><div class="auto-np-brand"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-music"/></svg><span class="eyebrow">Cozy Desk · Listening room</span></div>
+  <div id="autoNpContent"><img id="autoNpArt" alt=""><div id="autoNpInfo"><div id="autoNpDevice">Spotify</div><div id="autoNpTitle">—</div><div id="autoNpArtist">—</div><div id="autoNpProgress"><div id="autoNpProgressFill"></div></div><div id="autoNpTimes"><span id="autoNpTimeCur">0:00</span><span id="autoNpTimeDur">0:00</span></div></div></div>
+  <div id="autoNpHint"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-mouse"/></svg> Tocca per tornare alla scrivania</div>
+</div>
+<div id="app">
+  <nav id="sidebar" aria-label="Navigazione">
+    <div class="brand"><div class="brand-mark"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-moon"/></svg></div><span class="brand-name">COZY</span></div>
+    <button class="nav-btn active" data-view="home" aria-label="Home"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-home"/></svg><span>Home</span></button><button class="nav-btn" data-view="cozy" aria-label="Atmosfera"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-moon"/></svg><span>Atmosfera</span></button><button class="nav-btn" data-view="iptv" aria-label="TV & Live"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-tv"/></svg><span>TV & Live</span></button><button class="nav-btn" data-view="spotify" aria-label="Musica"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-music"/></svg><span>Musica</span></button>
+    <div class="sidebar-tail"></div>
+  </nav>
+  <main id="content">
+    <header class="app-header"><div class="app-title">Cozy Desk<span>Il tuo spazio, connesso.</span></div><span id="netPill">internet: verifica…</span></header>
+    <section id="view-home" class="view active">
+      <div id="homeLeft"><div class="eyebrow clock-label">Make room for slow living</div><div id="clock">--:--</div><div id="dateLine">—</div><div class="home-note"><span>Un momento per te.</span>Tutto il resto, a portata di mano.</div></div>
+      <div id="homeRight"><div class="room-heading"><div><div class="eyebrow">La tua stanza</div><h1>Comfort di casa</h1></div><span class="room-number">01</span></div>
+        <div class="statRow"><div class="stat-card"><div class="label"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-temp"/></svg>Temperatura</div><div class="value" id="tempVal">--°</div></div><div class="stat-card"><div class="label"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-drop"/></svg>Umidità</div><div class="value" id="humVal">--%</div></div></div>
+        <div class="statusGrid"><button class="status-pill clickable" data-status="ventilatore"><span class="device-icon"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-fan"/></svg></span><span class="status-dot"></span><span class="info"><span class="name">Ventilatore</span><span class="state">In attesa</span></span></button><button class="status-pill clickable" data-status="luci"><span class="device-icon"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-light"/></svg></span><span class="status-dot"></span><span class="info"><span class="name">Luci scrivania</span><span class="state">In attesa</span></span></button><button class="status-pill clickable" data-status="lampada"><span class="device-icon"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-lamp"/></svg></span><span class="status-dot"></span><span class="info"><span class="name">Lampada</span><span class="state">In attesa</span></span></button><button class="status-pill clickable" data-status="automatismi"><span class="device-icon"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-auto"/></svg></span><span class="status-dot"></span><span class="info"><span class="name">Automatismi</span><span class="state">In attesa</span></span></button></div>
+        <div class="room-footer"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-wifi"/></svg> Centralina Arduino · aggiornamento automatico</div>
       </div>
-    </div>
-    <div id="autoNpHint">tocca per chiudere</div>
-  </div>
-  <div id="app">
-    <div id="sidebar">
-      <button class="nav-btn active" data-view="home">🏠</button>
-      <button class="nav-btn" data-view="cozy">🌙</button>
-      <button class="nav-btn" data-view="iptv">📺</button>
-      <button class="nav-btn" data-view="spotify">🎵</button>
-    </div>
-
-    <div id="content">
-      <span id="netPill">internet: verifica...</span>
-
-      <!-- HOME -->
-      <div id="view-home" class="view active">
-        <div id="homeLeft">
-          <div id="clock">--:--</div>
-          <div id="dateLine">--</div>
-        </div>
-
-        <div id="homeRight">
-          <div class="statRow">
-            <div class="stat-card">
-              <div class="label">Temperatura</div>
-              <div class="value" id="tempVal">--°</div>
-            </div>
-            <div class="stat-card">
-              <div class="label">Umidità</div>
-              <div class="value" id="humVal">--%</div>
-            </div>
-          </div>
-
-          <div class="statusGrid">
-            <div class="status-pill clickable" data-status="ventilatore" style="cursor:pointer;transition:all .15s;">
-              <div class="status-dot"></div>
-              <div class="info"><span class="name">Ventilatore</span><span class="state">--</span></div>
-            </div>
-            <div class="status-pill clickable" data-status="luci" style="cursor:pointer;transition:all .15s;">
-              <div class="status-dot"></div>
-              <div class="info"><span class="name">Luci</span><span class="state">--</span></div>
-            </div>
-            <div class="status-pill clickable" data-status="lampada" style="cursor:pointer;transition:all .15s;">
-              <div class="status-dot"></div>
-              <div class="info"><span class="name">Lampada</span><span class="state">--</span></div>
-            </div>
-            <div class="status-pill clickable" data-status="automatismi" style="cursor:pointer;transition:all .15s;">
-              <div class="status-dot"></div>
-              <div class="info"><span class="name">Automatismi</span><span class="state">--</span></div>
-            </div>
-          </div>
-        </div>
+    </section>
+    <section id="view-cozy" class="view">
+      <video id="cozyVideo" autoplay muted loop playsinline><source src="../cozy-media/cozy.mp4" type="video/mp4"></video>
+      <div id="cozyNoVideo"><div class="empty-panel"><div class="empty-symbol"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-moon"/></svg></div><div class="eyebrow">Atmosfera</div><h1>Il tuo angolo di calma.</h1><p id="cozyNoVideoMsg">Nessun video caricato.</p><p class="supporting">Aggiungi il tuo video nella cartella cozy-media.<br>Si ripeterà in automatico, senza interruzioni.</p></div></div>
+      <button id="cozyCloseBtn" class="overlay-btn"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-back"/></svg> Home</button>
+    </section>
+    <section id="view-iptv" class="view">
+      <div id="iptvSelector"><div class="tv-selection"><div class="eyebrow">TV & Live</div><h1>Un posto in prima fila.</h1><p>I tuoi canali, sullo schermo della scrivania.</p><div class="tv-form">
+        <label for="iptvChannels">Scegli un canale</label><select id="iptvChannels"><option value="">Seleziona dalla tua raccolta</option></select>
+        <label for="iptvCustomUrl">Indirizzo streaming <span>· facoltativo</span></label><input id="iptvCustomUrl" type="url" placeholder="https://…/stream.m3u8">
+        <button id="iptvPlayBtn" class="primary-btn"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-play"/></svg> Riproduci</button><button id="iptvBackBtn">Torna alla Home</button>
+      </div></div></div>
+      <div id="iptvPlayerContainer">
+        <div id="webPlayerToolbar" style="display:none"><div class="web-player-heading"><strong id="webPlayerTitle">Canale web</strong><span id="webPlayerStatus" role="status">Caricamento…</span></div><button id="webPlayerBack" class="web-tool" title="Pagina precedente"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-back"/></svg></button><button id="webPlayerReload" class="web-tool" title="Ricarica pagina"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-reload"/></svg></button></div>
+        <video id="iptvVideo" autoplay playsinline controls></video><div id="iptvWebPlayer"></div>
+        <button id="iptvCloseBtn" class="overlay-btn"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-back"/></svg> Home</button><button id="iptvUnmuteBtn" class="overlay-btn"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-volume"/></svg> Attiva audio</button>
       </div>
-
-      <!-- COZY -->
-      <div id="view-cozy" class="view">
-        <video id="cozyVideo" autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;background:#000;display:none;">
-          <source src="../cozy-media/cozy.mp4" type="video/mp4">
-        </video>
-        <div id="cozyNoVideo" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, #1a1a3e 0%, #0f0f1e 100%);color:var(--muted);font-size:14px;text-align:center;padding:2vw;">
-          <button id="cozyCloseBtn" style="position:absolute;top:2vh;right:2vw;padding:8px 10px;border-radius:8px;border:none;background:rgba(0,0,0,0.6);color:#fff;cursor:pointer;z-index:20;font-size:14px;">✕</button>
-          <div style="max-width:420px;">
-            <div style="font-size:28px;margin-bottom:1vh;">🎬 Cozy Video</div>
-            <p id="cozyNoVideoMsg">Nessun video caricato.</p>
-            <p style="font-size:12px;margin-bottom:1.2vh;">Il player carica automaticamente il primo file video presente in cozy-media/. Per comportamento deterministico, rinomina il file in <strong>cozy.mp4</strong> (consigliato).</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- IPTV -->
-      <div id="view-iptv" class="view" style="flex-direction:column;background:#000;">
-        <div id="iptvSelector" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2vh;padding:3vw;width:100%;">
-          <div style="text-align:center;max-width:400px;width:100%;">
-            <div style="font-size:32px;margin-bottom:1vh;">📺</div>
-            <p style="font-size:clamp(14px,1.4vw,18px);margin:0 0 2vh;">Seleziona canale IPTV</p>
-            <select id="iptvChannels" 
-              style="width:100%;padding:1.2vh 1.4vw;border-radius:12px;border:1px solid var(--panel-border);background:var(--panel);color:var(--text);font-size:clamp(12px,1.2vw,14px);cursor:pointer;">
-              <option value="">-- Seleziona un canale --</option>
-            </select>
-            <input id="iptvCustomUrl" type="text" placeholder="Oppure inserisci URL M3U personalizzato" 
-              style="width:100%;padding:1.2vh 1.4vw;margin-top:1vh;border-radius:12px;border:1px solid var(--panel-border);background:var(--panel);color:var(--text);font-size:clamp(12px,1.2vw,14px);">
-            <button id="iptvPlayBtn" style="width:100%;margin-top:1.5vh;padding:1.2vh 1.4vw;border-radius:12px;border:none;background:var(--accent);color:#fff;font-weight:600;cursor:pointer;font-size:clamp(12px,1.2vw,14px);">Riproduci</button>
-            <button id="iptvBackBtn" style="width:100%;margin-top:1vh;padding:1.2vh 1.4vw;border-radius:12px;border:none;background:#2a2f3a;color:#fff;font-weight:600;cursor:pointer;font-size:clamp(12px,1.2vw,14px);display:none;">Indietro</button>
-          </div>
-        </div>
-        <div id="iptvPlayerContainer" style="flex:1;width:100%;height:100%;display:none;position:relative;">
-          <video id="iptvVideo" autoplay playsinline controls style="width:100%;height:100%;object-fit:contain;background:#000;">
-          </video>
-          <div id="iptvWebPlayer" style="width:100%;height:100%;display:none;background:#000;"></div>
-          <button id="iptvCloseBtn" style="position:absolute;top:2vh;right:2vw;padding:0.8vh 1.4vw;border-radius:8px;border:none;background:rgba(0,0,0,0.7);color:#fff;cursor:pointer;font-size:14px;z-index:10;">← Indietro</button>
-          <button id="iptvUnmuteBtn" style="position:absolute;bottom:2vh;right:2vw;padding:0.8vh 1.4vw;border-radius:8px;border:none;background:rgba(0,0,0,0.7);color:#fff;cursor:pointer;font-size:14px;z-index:10;">🔊 Attiva audio</button>
-        </div>
-      </div>
-
-      <!-- SVEGLIA: schermata bloccante, solo spegnimento -->
-      <div id="view-alarm" class="view" style="align-items:center;justify-content:center;background:#17251f;color:#fffaf1;z-index:10000;">
-        <div style="text-align:center;">
-          <div id="alarmTime" style="font-family:Georgia,'Times New Roman',serif;font-size:clamp(90px,18vw,270px);font-weight:800;letter-spacing:-.08em;line-height:1;">--:--</div>
-          <div id="alarmMotif" style="margin:2vh 0 5vh;font:800 clamp(11px,1.1vw,14px)/1 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:2px;color:#ffc72c;text-transform:uppercase;">Sveglia</div>
-          <button id="alarmStopBtn" style="min-width:clamp(220px,24vw,330px);padding:2vh 3vw;border:3px solid #fffaf1;border-radius:8px;background:#ee6434;color:#fffaf1;font:800 clamp(16px,1.5vw,22px)/1 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:1px;box-shadow:7px 7px 0 #ffc72c;cursor:pointer;">SPEGNI</button>
-        </div>
-      </div>
-
-      <!-- SPOTIFY -->
-      <div id="view-spotify" class="view">
-        <div id="spotifyTop">
-          <div id="spotifyLoginBox">
-            <p>Non sei connesso a Spotify.</p>
-            <button id="spotifyLoginBtn">Connetti Spotify</button>
-          </div>
-
-          <div id="spotifyMain">
-            <div id="nowPlayingBox">
-              <img id="npArt" src="" alt="">
-              <div id="npTitle">--</div>
-              <div id="npArtist">--</div>
-            </div>
-
-            <div id="listBox">
-              <button id="backToPlaylists">← playlist</button>
-              <div id="playlists"></div>
-              <div id="trackList" style="display:none; flex-direction:column; gap:6px;"></div>
-            </div>
-          </div>
-        </div>
-
-        <div id="progressBar">
-          <div id="playIcon">▶</div>
-          <span id="timeCur">0:00</span>
-          <div id="progressTrack"><div id="progressFill"></div></div>
-          <span id="timeDur">0:00</span>
-        </div>
-      </div>
-    </div>
-  </div>
+    </section>
+    <section id="view-alarm" class="view"><div class="alarm-content"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-alarm"/></svg><div class="eyebrow">Buongiorno</div><div id="alarmTime">--:--</div><div id="alarmMotif">Sveglia</div><button id="alarmStopBtn" class="primary-btn">Spegni sveglia</button></div></section>
+    <section id="view-spotify" class="view"><div id="spotifyTop">
+      <div id="spotifyLoginBox"><div class="empty-symbol"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-music"/></svg></div><div class="eyebrow">Listening room</div><h1>La tua musica, qui.</h1><p>La copertina e il brano arrivano automaticamente dal PC con il companion attivo.</p><button id="spotifyLoginBtn" class="primary-btn">Collega account Spotify</button><p class="supporting">Il collegamento via API è facoltativo.<br>Il companion continua a funzionare senza.</p></div>
+      <div id="spotifyMain"><div id="nowPlayingBox"><img id="npArt" alt=""><div id="npTitle">Nessuna riproduzione</div><div id="npArtist">—</div></div><div id="listBox"><div class="eyebrow library-heading">La tua libreria</div><button id="backToPlaylists">← Playlist</button><div id="playlists"></div><div id="trackList"></div></div></div>
+    </div><div id="progressBar"><div id="playIcon">▶</div><span id="timeCur">0:00</span><div id="progressTrack"><div id="progressFill"></div></div><span id="timeDur">0:00</span></div></section>
+  </main>
+</div>
 
   <script>
     const softScreenOff = document.getElementById("softScreenOff");
+    let webStreamActive = false;
+    let playbackGeneration = 0;
     window.cozyDesk.onSoftScreenPower((on) => {
       softScreenOff.style.display = on ? "none" : "block";
+      syncWebPlayer();
     });
 
     // ---------- Navigazione tra schermate ----------
     const views = ["home", "cozy", "iptv", "spotify", "alarm"];
     let currentView = "home";
     function goTo(view) {
+      if (!views.includes(view)) return;
       currentView = view;
+      window.cozyDesk.reportView(view);
+      // Navigation is deliberate: don't let an already-visible music cover
+      // keep intercepting remote clicks on the newly selected page.
+      const musicOverlay = document.getElementById('spotifyAutoNowPlaying');
+      musicOverlay.classList.remove('visible');
+      musicOverlay.setAttribute('aria-hidden', 'true');
       views.forEach((v) => {
         document.getElementById("view-" + v).classList.toggle("active", v === view);
         const navButton = document.querySelector(`.nav-btn[data-view="${v}"]`);
@@ -478,9 +97,9 @@
         }
         const iptvVideo = document.getElementById("iptvVideo");
         if (view === "iptv") {
-          iptvVideo.style.display = "block";
-          try { iptvVideo.play(); } catch (e) {}
+          iptvVideo.style.display = webStreamActive ? "none" : "block";
         } else {
+          stopIPTV();
           iptvVideo.style.display = "none";
           iptvVideo.pause();
           const webPlayer = document.getElementById("iptvWebPlayer");
@@ -489,6 +108,7 @@
             webPlayer.style.display = "none";
           }
         }
+        syncWebPlayer();
     }
 
     document.querySelectorAll(".nav-btn").forEach((btn) => {
@@ -508,6 +128,56 @@
     const iptvWebPlayer = document.getElementById("iptvWebPlayer");
     const iptvSelector = document.getElementById("iptvSelector");
     const iptvPlayerContainer = document.getElementById("iptvPlayerContainer");
+
+    function syncWebPlayer() {
+      const surface = document.getElementById('iptvWebPlayer');
+      if (!surface || !window.cozyDesk.presentWebPlayer) return;
+      const rect = surface.getBoundingClientRect();
+      window.cozyDesk.presentWebPlayer({
+        visible: webStreamActive && currentView === 'iptv' && softScreenOff.style.display !== 'block' &&
+          !document.getElementById('spotifyAutoNowPlaying').classList.contains('visible'),
+        bounds: { x: rect.x, y: rect.y, width: rect.width, height: rect.height }
+      });
+    }
+
+    function stopIPTV() {
+      playbackGeneration++;
+      webStreamActive = false;
+      window.cozyDesk.closeWebPlayer();
+      window.cozyDesk.reportChannel(null);
+      document.getElementById('webPlayerToolbar').style.display = 'none';
+      document.getElementById('iptvPlayerContainer').style.display = 'none';
+      document.getElementById('iptvSelector').style.display = 'flex';
+      document.getElementById('iptvWebPlayer').style.display = 'none';
+      const media = document.getElementById('iptvVideo');
+      media.pause();
+      media.removeAttribute('src');
+      media.load();
+      if (window._currentHls) { window._currentHls.destroy(); window._currentHls = null; }
+    }
+
+    new ResizeObserver(syncWebPlayer).observe(iptvWebPlayer);
+    window.addEventListener('resize', syncWebPlayer);
+    document.getElementById('webPlayerBack').addEventListener('click', () => window.cozyDesk.webBrowserAction({ type: 'back' }));
+    document.getElementById('webPlayerReload').addEventListener('click', () => window.cozyDesk.webBrowserAction({ type: 'reload' }));
+    window.cozyDesk.onWebPlayerStatus((state) => {
+      const status = document.getElementById('webPlayerStatus');
+      status.textContent = state.error || (state.loading ? 'Caricamento…' : 'Usa il touchpad del telecomando per navigare');
+      status.classList.toggle('error', Boolean(state.error));
+    });
+
+    const remoteCursor = document.createElement('div');
+    remoteCursor.id = 'remoteCursor';
+    remoteCursor.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(remoteCursor);
+    let cursorTimer;
+    window.cozyDesk.onRemoteCursor(({ x, y }) => {
+      remoteCursor.style.left = `${x}px`;
+      remoteCursor.style.top = `${y}px`;
+      remoteCursor.classList.add('visible');
+      clearTimeout(cursorTimer);
+      cursorTimer = setTimeout(() => remoteCursor.classList.remove('visible'), 3500);
+    });
 
     // Streams opened from the remote must not keep the browser's muted-autoplay flag.
     function enableIPTVAudio() {
@@ -543,6 +213,8 @@
     });
 
     function playIPTVChannel(url, name, type = "hls") {
+      stopIPTV();
+      const generation = playbackGeneration;
       // Ensure we're in the IPTV view and fullscreen overlay
       goTo('iptv');
       enableIPTVAudio();
@@ -551,6 +223,7 @@
       iptvWebPlayer.replaceChildren();
       iptvWebPlayer.style.display = "none";
       iptvVideo.style.display = "block";
+      window.cozyDesk.reportChannel({ url, name, type });
 
       // Destroy any existing hls instance
       if (window._currentHls) {
@@ -561,18 +234,21 @@
       iptvVideo.src = '';
 
       if (type === "web") {
+        webStreamActive = true;
         iptvVideo.style.display = "none";
         iptvUnmuteBtn.style.display = "none";
         iptvWebPlayer.style.display = "block";
-        const frame = document.createElement("iframe");
-        frame.src = url;
-        frame.title = name || "Canale web";
-        frame.allow = "autoplay; fullscreen; picture-in-picture; encrypted-media";
-        frame.sandbox = "allow-scripts allow-same-origin allow-forms allow-presentation";
-        frame.referrerPolicy = "strict-origin-when-cross-origin";
-        frame.style.cssText = "width:100%;height:100%;border:0;background:#000;";
-        iptvWebPlayer.appendChild(frame);
-        console.log(`[IPTV Web] Riproduci: ${name || url}`);
+        document.getElementById('webPlayerToolbar').style.display = 'flex';
+        document.getElementById('webPlayerTitle').textContent = name || 'Canale web';
+        document.getElementById('webPlayerStatus').textContent = 'Caricamento…';
+        syncWebPlayer();
+        window.cozyDesk.openWebPlayer(url).then((result) => {
+          if (generation !== playbackGeneration) return;
+          if (!result.ok) document.getElementById('webPlayerStatus').textContent = result.error;
+          syncWebPlayer();
+        }).catch((error) => {
+          if (generation === playbackGeneration) document.getElementById('webPlayerStatus').textContent = error.message;
+        });
         return;
       }
 
@@ -594,6 +270,7 @@
         });
 
         loadHls().then((Hls) => {
+          if (generation !== playbackGeneration) return;
           if (Hls && Hls.isSupported()) {
             const hls = new Hls();
             window._currentHls = hls;
@@ -611,6 +288,7 @@
             try { iptvVideo.play(); } catch (e) {}
           }
         }).catch((err) => {
+          if (generation !== playbackGeneration) return;
           console.error('Failed to load hls.js', err);
           iptvVideo.src = url;
           try { iptvVideo.play(); } catch (e) {}
@@ -726,21 +404,8 @@
 
     // ---------- Fullscreen overlay helpers (requestFullscreen + close on 'c') ----------
     async function exitOverlay() {
-      try { if (document.fullscreenElement) document.exitFullscreen(); } catch (e) { /* ignore */ }
-      // Hide overlay visually; keep the app in OS fullscreen (kiosk) so taskbar stays hidden on kiosk devices.
-      // If a remote admin wants to exit kiosk mode completely they can call the remote shutdown or a dedicated API.
-      document.body.classList.remove('fullscreen-view');
-      // restore home view and sidebar state
-      views.forEach((v) => {
-        document.getElementById("view-" + v).classList.toggle("active", v === 'home');
-        const btn = document.querySelector(`.nav-btn[data-view="${v}"]`);
-        if (btn) btn.classList.toggle("active", v === 'home');
-      });
-      // pause any videos and destroy hls instance
-      const iptvVideo = document.getElementById('iptvVideo'); if (iptvVideo) { try { iptvVideo.pause(); } catch(e){}; iptvVideo.src = ''; }
-      const iptvWebPlayer = document.getElementById('iptvWebPlayer'); if (iptvWebPlayer) { iptvWebPlayer.replaceChildren(); iptvWebPlayer.style.display = 'none'; }
-      if (window._currentHls) { try { window._currentHls.destroy(); } catch(e){}; window._currentHls = null; }
-      const cozyVideo = document.getElementById('cozyVideo'); if (cozyVideo) cozyVideo.pause();
+        try { if (document.fullscreenElement) document.exitFullscreen(); } catch (e) { /* ignore */ }
+        goTo('home');
     }
 
     // Close overlay when 'c' key is pressed while in fullscreen (user preference)
@@ -750,21 +415,12 @@
       }
     });
 
-    // When fullscreen state changes (user pressed native Esc or similar), ensure UI sync
-    document.addEventListener('fullscreenchange', () => {
-      if (!document.fullscreenElement) {
-        document.body.classList.remove('fullscreen-view');
-        views.forEach((v) => {
-          document.getElementById("view-" + v).classList.toggle("active", v === 'home');
-          const btn = document.querySelector(`.nav-btn[data-view="${v}"]`);
-          if (btn) btn.classList.toggle("active", v === 'home');
-        });
-      }
-    });
+      // Leaving a video's fullscreen returns to its player, not Home.
+      document.addEventListener('fullscreenchange', syncWebPlayer);
 
     // Cozy overlay close button (also exits fullscreen)
     document.addEventListener('click', (e) => {
-      if (e.target && e.target.id === 'cozyCloseBtn') exitOverlay();
+        if (e.target instanceof Element && e.target.closest('#cozyCloseBtn')) exitOverlay();
     });
 
     // ---------- Orologio (stile "lock screen": ore:minuti, ultralight) ----------
@@ -925,6 +581,7 @@
       autoNowPlayingDismissedFor = autoNowPlaying.dataset.trackKey || null;
       autoNowPlaying.classList.remove("visible");
       autoNowPlaying.setAttribute("aria-hidden", "true");
+      syncWebPlayer();
     });
 
     function formatTime(ms) {
@@ -943,6 +600,7 @@
         document.getElementById("progressFill").style.width = "0%";
         autoNowPlaying.classList.remove("visible");
         autoNowPlaying.setAttribute("aria-hidden", "true");
+        syncWebPlayer();
         return;
       }
       document.getElementById("npArt").src = track.albumArt || "";
@@ -968,9 +626,11 @@
 
       // Non copre la sveglia e non riappare sullo stesso brano dopo una
       // chiusura manuale. Al brano successivo torna automaticamente.
-      const shouldShow = track.autoDisplay && currentView !== "alarm" && autoNowPlayingDismissedFor !== trackKey;
+      const shouldShow = track.autoDisplay && currentView !== "alarm" && currentView !== "iptv" &&
+        softScreenOff.style.display !== 'block' && autoNowPlayingDismissedFor !== trackKey;
       autoNowPlaying.classList.toggle("visible", Boolean(shouldShow));
       autoNowPlaying.setAttribute("aria-hidden", shouldShow ? "false" : "true");
+      syncWebPlayer();
     });
 
     window.cozyDesk.onSpotifyError((msg) => console.error("Spotify:", msg));
