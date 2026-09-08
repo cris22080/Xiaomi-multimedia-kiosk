@@ -53,12 +53,8 @@ button:disabled { opacity: .45; cursor: wait; }
 /* Home: a generous clock and a room console of equal visual weight. */
 #view-home { align-items: center; gap: clamp(25px,4vw,76px); padding: clamp(85px,13vh,138px) clamp(26px,3.8vw,72px) clamp(28px,6vh,68px); }
 #homeLeft { flex: 1 1 43%; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; }
-.clock-label { margin-bottom: clamp(21px,4vh,44px); display: flex; gap: 10px; align-items: center; }
-.clock-label::before { content: ""; width: 20px; height: 1px; background: var(--accent); }
-#clock { font-size: clamp(90px,11.8vw,224px); line-height: .93; font-weight: 350; letter-spacing: -.075em; font-variant-numeric: tabular-nums; color: var(--text); white-space: nowrap; }
+#clock { font-size: clamp(118px,14vw,280px); line-height: .9; font-weight: 330; letter-spacing: -.075em; font-variant-numeric: tabular-nums; color: var(--text); white-space: nowrap; }
 #dateLine { margin-top: clamp(20px,3.5vh,36px); font-size: clamp(13px,1.3vw,22px); color: #b1bbbf; letter-spacing: .025em; text-transform: capitalize; }
-.home-note { margin-top: clamp(35px,8vh,92px); padding-top: 20px; border-top: 1px solid var(--line); width: min(100%,280px); color: #6f838a; font-size: 11px; line-height: 1.8; }
-.home-note span { display: block; color: #a4b3b7; font-size: 12px; }
 #homeRight { flex: 1 1 53%; min-width: 0; display: flex; flex-direction: column; gap: clamp(13px,1.8vh,22px); padding: clamp(20px,2.1vw,36px); border: 1px solid var(--line); border-radius: 28px; background: linear-gradient(140deg,#1a232b,#151d24); box-shadow: 0 22px 58px rgba(0,0,0,.16),inset 0 1px rgba(255,255,255,.025); }
 .room-heading { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 4px; }
 .room-heading h1 { margin: 2px 0 0; font-size: clamp(22px,2vw,32px); line-height: 1.2; font-weight: 550; letter-spacing: -.04em; }
@@ -194,8 +190,6 @@ body.fullscreen-view #sidebar { display: none; }
 
 @media (min-width:1600px) {
   .eyebrow { font-size: 12px; }
-  .home-note { font-size: 13px; width: 330px; }
-  .home-note span { font-size: 15px; }
   .room-footer { font-size: 12px; }
   .app-title { font-size: 22px; }
   .nav-btn { min-height: 78px; }
@@ -211,9 +205,7 @@ body.fullscreen-view #sidebar { display: none; }
   .stat-card { padding: 15px 17px; gap: 13px; }
   .stat-card .value { font-size: clamp(35px,4.6vw,60px); }
   .status-pill { min-height: 70px; padding: 13px; gap: 10px; }
-  .home-note { margin-top: 35px; padding-top: 15px; }
-  .clock-label { margin-bottom: 27px; }
-  #clock { font-size: 11.4vw; }
+  #clock { font-size: 13.5vw; }
   #dateLine { margin-top: 22px; }
   .tv-selection h1 { font-size: 32px; }
   .tv-selection > p { margin-bottom: 18px; }
@@ -242,10 +234,8 @@ body.fullscreen-view #sidebar { display: none; }
   #netPill { font-size: 9px; padding: 7px 10px; }
   #view-home { overflow-y: auto; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 28px; padding: 83px 23px 26px; }
   #homeLeft { flex: 0 0 auto; align-items: center; padding: 12px 0 0; }
-  .clock-label { margin-bottom: 23px; font-size: 9px; }
-  #clock { font-size: clamp(90px,24vw,158px); }
+  #clock { font-size: clamp(108px,28vw,180px); }
   #dateLine { margin-top: 18px; font-size: 13px; }
-  .home-note { display: none; }
   #homeRight { flex: 0 0 auto; width: 100%; padding: 20px; gap: 13px; border-radius: 22px; }
   .room-heading h1 { font-size: 23px; }
   .stat-card { padding: 18px; gap: 15px; }
