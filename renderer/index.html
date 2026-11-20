@@ -9,16 +9,128 @@
   <div id="autoNpHint"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-mouse"/></svg> Tocca per tornare alla scrivania</div>
 </div>
 <div id="app">
+  <div class="holiday-snow" aria-hidden="true"></div>
   <nav id="sidebar" aria-label="Navigazione">
     <div class="brand"><div class="brand-mark"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-moon"/></svg></div><span class="brand-name">COZY</span></div>
     <button class="nav-btn active" data-view="home" aria-label="Home"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-home"/></svg><span>Home</span></button><button class="nav-btn" data-view="cozy" aria-label="Atmosfera"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-moon"/></svg><span>Atmosfera</span></button><button class="nav-btn" data-view="iptv" aria-label="TV & Live"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-tv"/></svg><span>TV & Live</span></button><button class="nav-btn" data-view="spotify" aria-label="Musica"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-music"/></svg><span>Musica</span></button>
     <div class="sidebar-tail"></div>
   </nav>
   <main id="content">
-    <header class="app-header"><div class="app-title">Cozy Desk<span>Il tuo spazio, connesso.</span></div><span id="netPill">internet: verifica…</span></header>
+    <header class="app-header"><div class="app-title">Cozy Desk<span data-holiday-copy="✦ Pixel Christmas Edition ✦">Il tuo spazio, connesso.</span></div><span id="netPill">internet: verifica…</span></header>
     <section id="view-home" class="view active">
+      <div class="holiday-scene" aria-hidden="true">
+        <!-- Pixel-art Christmas tree LEFT: detailed with garlands, baubles, candy canes, gifts -->
+        <svg class="pixel-tree pixel-tree-left" viewBox="0 0 64 80" shape-rendering="crispEdges">
+          <!-- Star -->
+          <rect x="28" y="2" width="8" height="3" fill="#f4c95d"/>
+          <rect x="31" y="0" width="2" height="2" fill="#f4c95d"/>
+          <rect x="31" y="5" width="2" height="2" fill="#f4c95d"/>
+          <rect x="26" y="4" width="2" height="2" fill="#f4c95d"/>
+          <rect x="36" y="4" width="2" height="2" fill="#f4c95d"/>
+          <!-- Tree layers (alternating greens for depth) -->
+          <rect x="27" y="7" width="10" height="5" fill="#268259"/>
+          <rect x="24" y="12" width="16" height="5" fill="#20734e"/>
+          <rect x="21" y="17" width="22" height="5" fill="#268259"/>
+          <rect x="18" y="22" width="28" height="6" fill="#20734e"/>
+          <rect x="15" y="28" width="34" height="6" fill="#268259"/>
+          <rect x="12" y="34" width="40" height="6" fill="#20734e"/>
+          <rect x="9" y="40" width="46" height="7" fill="#268259"/>
+          <!-- Garland stripes (golden) -->
+          <rect x="25" y="14" width="14" height="2" fill="rgba(244,201,93,.55)"/>
+          <rect x="20" y="24" width="24" height="2" fill="rgba(244,201,93,.55)"/>
+          <rect x="14" y="36" width="36" height="2" fill="rgba(244,201,93,.55)"/>
+          <!-- Baubles (red and gold) -->
+          <rect x="29" y="9" width="3" height="3" fill="#cb3c45"/>
+          <rect x="26" y="14" width="3" height="3" fill="#f4c95d"/>
+          <rect x="35" y="14" width="3" height="3" fill="#cb3c45"/>
+          <rect x="23" y="19" width="3" height="3" fill="#cb3c45"/>
+          <rect x="31" y="20" width="3" height="3" fill="#f4c95d"/>
+          <rect x="38" y="19" width="3" height="3" fill="#9b59b6"/>
+          <rect x="20" y="25" width="3" height="3" fill="#f4c95d"/>
+          <rect x="28" y="26" width="3" height="3" fill="#cb3c45"/>
+          <rect x="40" y="25" width="3" height="3" fill="#f4c95d"/>
+          <rect x="17" y="36" width="3" height="3" fill="#cb3c45"/>
+          <rect x="27" y="37" width="3" height="3" fill="#9b59b6"/>
+          <rect x="37" y="36" width="3" height="3" fill="#f4c95d"/>
+          <rect x="45" y="37" width="3" height="3" fill="#cb3c45"/>
+          <rect x="13" y="42" width="3" height="3" fill="#f4c95d"/>
+          <rect x="22" y="43" width="3" height="3" fill="#cb3c45"/>
+          <rect x="33" y="42" width="3" height="3" fill="#9b59b6"/>
+          <rect x="43" y="43" width="3" height="3" fill="#f4c95d"/>
+          <!-- Candy canes -->
+          <rect x="34" y="30" width="2" height="5" fill="#fff"/>
+          <rect x="34" y="30" width="2" height="1" fill="#cb3c45"/>
+          <rect x="34" y="32" width="2" height="1" fill="#cb3c45"/>
+          <rect x="34" y="34" width="2" height="1" fill="#cb3c45"/>
+          <rect x="24" y="41" width="2" height="5" fill="#fff"/>
+          <rect x="24" y="41" width="2" height="1" fill="#cb3c45"/>
+          <rect x="24" y="43" width="2" height="1" fill="#cb3c45"/>
+          <rect x="24" y="45" width="2" height="1" fill="#cb3c45"/>
+          <!-- Trunk -->
+          <rect x="29" y="47" width="6" height="10" fill="#8B6914"/>
+          <rect x="29" y="47" width="6" height="2" fill="#6B4F12"/>
+          <!-- Snow ground -->
+          <rect x="5" y="57" width="54" height="6" fill="#e8f0f4"/>
+          <rect x="3" y="59" width="58" height="4" fill="#fff"/>
+          <!-- Gifts under tree -->
+          <rect x="14" y="52" width="8" height="6" fill="#cb3c45"/>
+          <rect x="14" y="52" width="8" height="2" fill="#f4c95d"/>
+          <rect x="17" y="52" width="2" height="6" fill="#f4c95d"/>
+          <rect x="42" y="53" width="7" height="5" fill="#2980b9"/>
+          <rect x="42" y="53" width="7" height="2" fill="#fff"/>
+          <rect x="45" y="53" width="2" height="5" fill="#fff"/>
+          <rect x="36" y="54" width="5" height="4" fill="#f4c95d"/>
+          <rect x="36" y="54" width="5" height="1" fill="#cb3c45"/>
+          <rect x="38" y="54" width="1" height="4" fill="#cb3c45"/>
+        </svg>
+        <!-- Pixel-art Christmas tree RIGHT: smaller version -->
+        <svg class="pixel-tree pixel-tree-right" viewBox="0 0 64 80" shape-rendering="crispEdges">
+          <!-- Star -->
+          <rect x="28" y="2" width="8" height="3" fill="#f4c95d"/>
+          <rect x="31" y="0" width="2" height="2" fill="#f4c95d"/>
+          <rect x="31" y="5" width="2" height="2" fill="#f4c95d"/>
+          <rect x="26" y="4" width="2" height="2" fill="#f4c95d"/>
+          <rect x="36" y="4" width="2" height="2" fill="#f4c95d"/>
+          <!-- Tree layers -->
+          <rect x="27" y="7" width="10" height="5" fill="#268259"/>
+          <rect x="24" y="12" width="16" height="5" fill="#20734e"/>
+          <rect x="21" y="17" width="22" height="5" fill="#268259"/>
+          <rect x="18" y="22" width="28" height="6" fill="#20734e"/>
+          <rect x="15" y="28" width="34" height="6" fill="#268259"/>
+          <rect x="12" y="34" width="40" height="6" fill="#20734e"/>
+          <rect x="9" y="40" width="46" height="7" fill="#268259"/>
+          <!-- Garland stripes -->
+          <rect x="25" y="14" width="14" height="2" fill="rgba(244,201,93,.55)"/>
+          <rect x="20" y="24" width="24" height="2" fill="rgba(244,201,93,.55)"/>
+          <rect x="14" y="36" width="36" height="2" fill="rgba(244,201,93,.55)"/>
+          <!-- Baubles -->
+          <rect x="30" y="9" width="3" height="3" fill="#f4c95d"/>
+          <rect x="26" y="14" width="3" height="3" fill="#cb3c45"/>
+          <rect x="35" y="15" width="3" height="3" fill="#f4c95d"/>
+          <rect x="23" y="19" width="3" height="3" fill="#f4c95d"/>
+          <rect x="38" y="20" width="3" height="3" fill="#cb3c45"/>
+          <rect x="20" y="25" width="3" height="3" fill="#cb3c45"/>
+          <rect x="40" y="26" width="3" height="3" fill="#9b59b6"/>
+          <rect x="17" y="36" width="3" height="3" fill="#f4c95d"/>
+          <rect x="27" y="37" width="3" height="3" fill="#cb3c45"/>
+          <rect x="43" y="37" width="3" height="3" fill="#f4c95d"/>
+          <rect x="13" y="42" width="3" height="3" fill="#cb3c45"/>
+          <rect x="33" y="43" width="3" height="3" fill="#f4c95d"/>
+          <!-- Trunk -->
+          <rect x="29" y="47" width="6" height="10" fill="#8B6914"/>
+          <rect x="29" y="47" width="6" height="2" fill="#6B4F12"/>
+          <!-- Snow ground -->
+          <rect x="5" y="57" width="54" height="6" fill="#e8f0f4"/>
+          <rect x="3" y="59" width="58" height="4" fill="#fff"/>
+          <!-- Gift -->
+          <rect x="40" y="53" width="7" height="5" fill="#20734e"/>
+          <rect x="40" y="53" width="7" height="2" fill="#cb3c45"/>
+          <rect x="43" y="53" width="2" height="5" fill="#cb3c45"/>
+        </svg>
+        <div class="holiday-greeting">❄ BUON NATALE ❄ <span>🎄</span></div>
+      </div>
       <div id="homeLeft"><div id="clock">--:--</div><div id="dateLine">—</div></div>
-      <div id="homeRight"><div class="room-heading"><div><div class="eyebrow">La tua stanza</div><h1>Comfort di casa</h1></div><span class="room-number">01</span></div>
+      <div id="homeRight"><div class="room-heading"><div><div class="eyebrow" data-holiday-copy="Villaggio pixel">La tua stanza</div><h1 data-holiday-copy="Benvenuti nel rifugio ❄">Comfort di casa</h1></div><span class="room-number">01</span></div>
         <div class="statRow"><div class="stat-card"><div class="label"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-temp"/></svg>Temperatura</div><div class="value" id="tempVal">--°</div></div><div class="stat-card"><div class="label"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-drop"/></svg>Umidità</div><div class="value" id="humVal">--%</div></div></div>
         <div class="statusGrid"><button class="status-pill clickable" data-status="ventilatore"><span class="device-icon"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-fan"/></svg></span><span class="status-dot"></span><span class="info"><span class="name">Ventilatore</span><span class="state">In attesa</span></span></button><button class="status-pill clickable" data-status="luci"><span class="device-icon"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-light"/></svg></span><span class="status-dot"></span><span class="info"><span class="name">Luci scrivania</span><span class="state">In attesa</span></span></button><button class="status-pill clickable" data-status="lampada"><span class="device-icon"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-lamp"/></svg></span><span class="status-dot"></span><span class="info"><span class="name">Lampada</span><span class="state">In attesa</span></span></button><button class="status-pill clickable" data-status="automatismi"><span class="device-icon"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-auto"/></svg></span><span class="status-dot"></span><span class="info"><span class="name">Automatismi</span><span class="state">In attesa</span></span></button></div>
         <div class="room-footer"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-wifi"/></svg> Centralina Arduino · aggiornamento automatico</div>
@@ -26,14 +138,14 @@
     </section>
     <section id="view-cozy" class="view">
       <video id="cozyVideo" autoplay muted loop playsinline><source src="../cozy-media/cozy.mp4" type="video/mp4"></video>
-      <div id="cozyNoVideo"><div class="empty-panel"><div class="empty-symbol"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-moon"/></svg></div><div class="eyebrow">Atmosfera</div><h1>Il tuo angolo di calma.</h1><p id="cozyNoVideoMsg">Nessun video caricato.</p><p class="supporting">Aggiungi il tuo video nella cartella cozy-media.<br>Si ripeterà in automatico, senza interruzioni.</p></div></div>
+      <div id="cozyNoVideo"><div class="empty-panel"><div class="empty-symbol"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-moon"/></svg></div><div class="eyebrow" data-holiday-copy="Notte d'inverno">Atmosfera</div><h1 data-holiday-copy="Un rifugio sotto la neve">Il tuo angolo di calma.</h1><p id="cozyNoVideoMsg">Nessun video caricato.</p><p class="supporting" data-holiday-copy="Scegli una scena rilassante e lascia che la neve faccia il resto.">Aggiungi il tuo video nella cartella cozy-media. Si ripeterà in automatico, senza interruzioni.</p></div></div>
       <button id="cozyCloseBtn" class="overlay-btn"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-back"/></svg> Home</button>
     </section>
     <section id="view-iptv" class="view">
-      <div id="iptvSelector"><div class="tv-selection"><div class="eyebrow">TV & Live</div><h1>Un posto in prima fila.</h1><p>I tuoi canali, sullo schermo della scrivania.</p><div class="tv-form">
+      <div id="iptvSelector"><div class="tv-selection"><div class="eyebrow" data-holiday-copy="Cinema nella baita">TV & Live</div><h1 data-holiday-copy="Una serata davanti al camino">Un posto in prima fila.</h1><p data-holiday-copy="Scegli un canale e goditi lo spettacolo tra luci e neve.">I tuoi canali, sullo schermo della scrivania.</p><div class="tv-form">
         <label for="iptvChannels">Scegli un canale</label><select id="iptvChannels"><option value="">Seleziona dalla tua raccolta</option></select>
         <label for="iptvCustomUrl">Indirizzo streaming <span>· facoltativo</span></label><input id="iptvCustomUrl" type="url" placeholder="https://…/stream.m3u8">
-        <button id="iptvPlayBtn" class="primary-btn"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-play"/></svg> Riproduci</button><button id="iptvBackBtn">Torna alla Home</button>
+        <button id="iptvPlayBtn" class="primary-btn"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-play"/></svg> Riproduci</button><button id="iptvBackBtn" data-holiday-copy="Rientra alla baita">Torna alla Home</button>
       </div></div></div>
       <div id="iptvPlayerContainer">
         <div id="webPlayerToolbar" style="display:none"><div class="web-player-heading"><strong id="webPlayerTitle">Canale web</strong><span id="webPlayerStatus" role="status">Caricamento…</span></div><button id="webPlayerBack" class="web-tool" title="Pagina precedente"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-back"/></svg></button><button id="webPlayerReload" class="web-tool" title="Ricarica pagina"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-reload"/></svg></button></div>
@@ -41,16 +153,28 @@
         <button id="iptvCloseBtn" class="overlay-btn"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-back"/></svg> Home</button><button id="iptvUnmuteBtn" class="overlay-btn"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-volume"/></svg> Attiva audio</button>
       </div>
     </section>
-    <section id="view-alarm" class="view"><div class="alarm-content"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-alarm"/></svg><div class="eyebrow">Buongiorno</div><div id="alarmTime">--:--</div><div id="alarmMotif">Sveglia</div><button id="alarmStopBtn" class="primary-btn">Spegni sveglia</button></div></section>
+    <section id="view-alarm" class="view"><div class="alarm-content"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-alarm"/></svg><div class="eyebrow" data-holiday-copy="Risveglio d'inverno">Buongiorno</div><div id="alarmTime">--:--</div><div id="alarmMotif">Sveglia</div><button id="alarmStopBtn" class="primary-btn" data-holiday-copy="Spegni la sveglia">Spegni sveglia</button></div></section>
     <section id="view-spotify" class="view"><div id="spotifyTop">
-      <div id="spotifyLoginBox"><div class="empty-symbol"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-music"/></svg></div><div class="eyebrow">Listening room</div><h1>La tua musica, qui.</h1><p>La copertina e il brano arrivano automaticamente dal PC con il companion attivo.</p><button id="spotifyLoginBtn" class="primary-btn">Collega account Spotify</button><p class="supporting">Il collegamento via API è facoltativo.<br>Il companion continua a funzionare senza.</p></div>
-      <div id="spotifyMain"><div id="nowPlayingBox"><img id="npArt" alt=""><div id="npTitle">Nessuna riproduzione</div><div id="npArtist">—</div></div><div id="listBox"><div class="eyebrow library-heading">La tua libreria</div><button id="backToPlaylists">← Playlist</button><div id="playlists"></div><div id="trackList"></div></div></div>
+      <div id="spotifyLoginBox"><div class="empty-symbol"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-music"/></svg></div><div class="eyebrow" data-holiday-copy="Sala musica">Listening room</div><h1 data-holiday-copy="La colonna sonora delle feste">La tua musica, qui.</h1><p data-holiday-copy="Collega Spotify e lascia che la musica accompagni la tua stanza durante le feste.">La copertina e il brano arrivano automaticamente dal PC con il companion attivo.</p><button id="spotifyLoginBtn" class="primary-btn">Collega account Spotify</button><p class="supporting">Il collegamento via API è facoltativo.<br>Il companion continua a funzionare senza.</p></div>
+      <div id="spotifyMain"><div id="nowPlayingBox"><img id="npArt" alt=""><div id="npTitle">Nessuna riproduzione</div><div id="npArtist">—</div></div><div id="listBox"><div class="eyebrow library-heading" data-holiday-copy="Dischi sotto l'albero">La tua libreria</div><button id="backToPlaylists" data-holiday-copy="← Torna alle playlist">← Playlist</button><div id="playlists"></div><div id="trackList"></div></div></div>
     </div><div id="progressBar"><div id="playIcon">▶</div><span id="timeCur">0:00</span><div id="progressTrack"><div id="progressFill"></div></div><span id="timeDur">0:00</span></div></section>
   </main>
 </div>
 
   <script>
     const softScreenOff = document.getElementById("softScreenOff");
+    function syncHolidayTheme() {
+      const today = new Date();
+      const monthDay = (today.getMonth() + 1) * 100 + today.getDate();
+      const active = monthDay >= 1115 || monthDay <= 110;
+      document.body.classList.toggle("holiday-theme-active", active);
+      document.querySelectorAll("[data-holiday-copy]").forEach((element) => {
+        if (!element.dataset.normalCopy) element.dataset.normalCopy = element.innerHTML;
+        element.innerHTML = active ? element.dataset.holidayCopy : element.dataset.normalCopy;
+      });
+    }
+    syncHolidayTheme();
+    setInterval(syncHolidayTheme, 60_000);
     let webStreamActive = false;
     let playbackGeneration = 0;
     window.cozyDesk.onSoftScreenPower((on) => {

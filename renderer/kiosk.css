@@ -1,6 +1,5 @@
 /* Cozy Desk — a quiet, tactile console. Shared palette with the remote. */
 :root {
-  color-scheme: dark;
   --bg: #10151b;
   --surface: #181f27;
   --surface-raised: #202933;
@@ -264,4 +263,483 @@ body.fullscreen-view #sidebar { display: none; }
 }
 @media (prefers-reduced-motion:reduce) {
   *,*::before,*::after { transition: none !important; animation: none !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Holiday Pixel-Art Winter Theme
+   Inspired by retro pixel-art Christmas scenes: snowy white background,
+   decorated pixel trees, falling pixel snow, and blocky squared text.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+body.holiday-theme-active {
+  color-scheme: light;
+  --bg: #e8f0f4;
+  --surface: rgba(255,255,255,.88);
+  --surface-raised: rgba(255,255,255,.95);
+  --surface-deep: #dce8ee;
+  --line: rgba(32,115,78,.18);
+  --text: #1a2e28;
+  --muted: #4a6e62;
+  --accent: #cb3c45;
+  --accent-2: #f4c95d;
+  --green: #20734e;
+  --panel: rgba(255,255,255,.85);
+  --panel-border: rgba(32,115,78,.20);
+  --font: "Courier New", "Lucida Console", "Consolas", monospace;
+  --pixel-shadow: 3px 3px 0 rgba(0,0,0,.18);
+  --pixel-radius: 0px;
+}
+
+/* Force all text to look blocky/squared like pixel art */
+body.holiday-theme-active,
+body.holiday-theme-active * {
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: auto;
+  text-rendering: optimizeSpeed;
+}
+
+body.holiday-theme-active #app {
+  position: relative;
+  isolation: isolate;
+  background:
+    /* Faint snow hills at the bottom */
+    radial-gradient(ellipse at 20% 100%, rgba(255,255,255,.95) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(255,255,255,.90) 0%, transparent 45%),
+    radial-gradient(ellipse at 50% 100%, rgba(255,255,255,.88) 0%, transparent 60%),
+    /* Soft winter sky gradient */
+    linear-gradient(180deg, #d4e8f0 0%, #e8f0f4 40%, #f0f5f8 70%, #ffffff 100%);
+  font-family: var(--font);
+}
+
+body.holiday-theme-active :is(button,input,select) { font-family: var(--font); }
+
+/* --- Text styling: all text gets pixel-block treatment --- */
+body.holiday-theme-active :is(.eyebrow,.label,.state,.room-footer,.supporting,.tv-form label,.tv-selection > p,#spotifyLoginBox p,.playlist-row .count,.track-row .dur,#webPlayerStatus,#npArtist,#autoNpArtist,#autoNpDevice,#autoNpHint) {
+  color: #4a6e62;
+  letter-spacing: .08em;
+}
+
+body.holiday-theme-active :is(h1,h2,h3,.app-title,#clock,#dateLine,#alarmTime,#alarmMotif,#npTitle,#autoNpTitle,#webPlayerTitle) {
+  color: #1a2e28;
+  text-shadow: var(--pixel-shadow);
+  letter-spacing: .04em;
+  font-weight: 800;
+}
+
+body.holiday-theme-active .app-title {
+  color: #20734e;
+  text-shadow: 2px 2px 0 rgba(32,115,78,.2);
+}
+body.holiday-theme-active .app-title span { color: #cb3c45; }
+
+/* --- Sidebar: frosted glass look on white --- */
+body.holiday-theme-active #sidebar {
+  background: rgba(255,255,255,.92);
+  border-color: rgba(32,115,78,.15);
+  backdrop-filter: blur(12px);
+}
+body.holiday-theme-active .brand-mark {
+  border-radius: var(--pixel-radius);
+  color: #cb3c45;
+  background: #20734e;
+  box-shadow: 3px 3px 0 rgba(0,0,0,.15);
+}
+body.holiday-theme-active .brand-name { color: #20734e; font-weight: 800; letter-spacing: .25em; }
+
+body.holiday-theme-active .nav-btn {
+  border-radius: var(--pixel-radius);
+  color: #4a6e62;
+}
+body.holiday-theme-active .nav-btn:hover { background: rgba(32,115,78,.08); color: #20734e; }
+body.holiday-theme-active .nav-btn.active {
+  color: #fff;
+  background: #20734e;
+  border-color: #20734e;
+  box-shadow: 3px 3px 0 rgba(0,0,0,.12);
+}
+
+/* --- Network pill --- */
+body.holiday-theme-active #netPill {
+  border-radius: var(--pixel-radius);
+  background: rgba(255,255,255,.85);
+  color: #20734e;
+  border-color: rgba(32,115,78,.2);
+  box-shadow: 2px 2px 0 rgba(0,0,0,.08);
+}
+body.holiday-theme-active #netPill::before { background: #20734e; box-shadow: 0 0 8px rgba(32,115,78,.4); }
+
+/* --- Home view --- */
+body.holiday-theme-active #view-home { position: relative; isolation: isolate; }
+body.holiday-theme-active #view-home > :not(.holiday-scene) { position: relative; z-index: 1; }
+
+body.holiday-theme-active #clock {
+  color: #20734e !important;
+  text-shadow: 4px 4px 0 rgba(32,115,78,.15);
+}
+body.holiday-theme-active #dateLine {
+  color: #cb3c45 !important;
+  text-shadow: 2px 2px 0 rgba(203,60,69,.12);
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: .12em;
+}
+
+/* --- Room panel --- */
+body.holiday-theme-active #homeRight {
+  border-radius: var(--pixel-radius);
+  border: 2px solid rgba(32,115,78,.2);
+  background: rgba(255,255,255,.82);
+  backdrop-filter: blur(10px);
+  box-shadow: 4px 4px 0 rgba(0,0,0,.08);
+}
+
+body.holiday-theme-active .stat-card {
+  border-radius: var(--pixel-radius);
+  border: 2px solid rgba(32,115,78,.12);
+  background: rgba(255,255,255,.75);
+  box-shadow: 2px 2px 0 rgba(0,0,0,.06);
+}
+body.holiday-theme-active .stat-card .label { color: #4a6e62; }
+body.holiday-theme-active .stat-card .value { color: #1a2e28; text-shadow: 2px 2px 0 rgba(0,0,0,.08); }
+body.holiday-theme-active .stat-card .icon { color: #f4c95d; }
+body.holiday-theme-active .stat-card:last-child .icon { color: #20734e; }
+
+body.holiday-theme-active .status-pill {
+  border-radius: var(--pixel-radius);
+  border: 2px solid rgba(32,115,78,.12);
+  background: rgba(255,255,255,.70);
+  box-shadow: 2px 2px 0 rgba(0,0,0,.06);
+}
+body.holiday-theme-active .status-pill:hover {
+  border-color: rgba(203,60,69,.4);
+  background: rgba(255,255,255,.85);
+  transform: translate(-1px,-1px);
+  box-shadow: 3px 3px 0 rgba(0,0,0,.1);
+}
+body.holiday-theme-active .status-pill .name { color: #1a2e28; }
+body.holiday-theme-active .status-pill .state { color: #4a6e62; }
+body.holiday-theme-active .status-pill.on { border-color: rgba(32,115,78,.35); background: rgba(32,115,78,.1); }
+body.holiday-theme-active .status-pill.on .device-icon,
+body.holiday-theme-active .status-pill.on .state { color: #20734e; }
+body.holiday-theme-active .status-pill.on .status-dot { background: #20734e; box-shadow: 0 0 8px rgba(32,115,78,.5); }
+body.holiday-theme-active .status-dot { background: #aec4b8; }
+body.holiday-theme-active .device-icon { color: #6b9a84; }
+
+body.holiday-theme-active .room-heading h1 { color: #1a2e28; }
+body.holiday-theme-active .room-heading .room-number { color: #cb3c45; text-shadow: 2px 2px 0 rgba(203,60,69,.15); }
+body.holiday-theme-active .room-footer { color: #6b9a84; }
+
+/* --- Primary button: pixel-art red --- */
+body.holiday-theme-active .primary-btn {
+  border-radius: var(--pixel-radius);
+  background: #cb3c45;
+  color: #fff;
+  border: 2px solid #a82d35;
+  box-shadow: 3px 3px 0 rgba(0,0,0,.18);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  font-weight: 800;
+}
+body.holiday-theme-active .primary-btn:hover { background: #e04e57; transform: translate(-1px,-1px); box-shadow: 4px 4px 0 rgba(0,0,0,.2); }
+body.holiday-theme-active .primary-btn:active { transform: translate(2px,2px); box-shadow: none; }
+
+/* ═══ SNOW & DECORATIONS ═══ */
+.holiday-snow,.holiday-scene { display: none; }
+
+/* --- Falling pixel snow (white/icy flakes on light bg) --- */
+body.holiday-theme-active .holiday-snow {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 10022;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: .7;
+}
+body.holiday-theme-active .holiday-snow::before,
+body.holiday-theme-active .holiday-snow::after {
+  content: "";
+  position: absolute;
+  inset: -100% 0 0;
+  /* Pixel-perfect square snowflakes */
+  background-image:
+    radial-gradient(circle, #fff 1.5px, transparent 1.5px),
+    radial-gradient(circle, rgba(180,210,230,.9) 1px, transparent 1px),
+    radial-gradient(circle, #fff 2px, transparent 2px);
+  background-size: 67px 83px, 113px 127px, 173px 199px;
+  background-position: 7px 11px, 43px 67px, 97px 23px;
+  animation: pixel-snow 14s linear infinite;
+  image-rendering: pixelated;
+}
+body.holiday-theme-active .holiday-snow::after {
+  opacity: .6;
+  background-image:
+    radial-gradient(circle, #fff 1.2px, transparent 1.2px),
+    radial-gradient(circle, rgba(200,220,240,.85) 1.8px, transparent 1.8px);
+  background-size: 151px 167px, 97px 109px;
+  background-position: 31px 19px, 73px 53px;
+  animation-duration: 22s;
+  animation-direction: reverse;
+}
+@keyframes pixel-snow { to { transform: translateY(100%); } }
+
+/* --- Holiday scene (bottom area: snow ground + pixel trees) --- */
+body.holiday-theme-active .holiday-scene {
+  display: block;
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  /* Snow-covered ground at the bottom */
+  background: linear-gradient(180deg, transparent 80%, rgba(255,255,255,.65) 90%, rgba(255,255,255,.9) 100%);
+}
+/* Pixelated snow ground line */
+body.holiday-theme-active .holiday-scene::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 8px;
+  background: repeating-linear-gradient(90deg, #fff 0 6px, #e8f0f4 6px 8px);
+  image-rendering: pixelated;
+}
+
+/* --- Pixel trees --- */
+body.holiday-theme-active .pixel-tree {
+  position: absolute;
+  width: clamp(50px,6vw,90px);
+  height: auto;
+  image-rendering: pixelated;
+  filter: drop-shadow(3px 3px 0 rgba(0,0,0,.12));
+}
+body.holiday-theme-active .pixel-tree-left {
+  left: clamp(12px,2.5vw,40px);
+  bottom: 12px;
+  opacity: .85;
+}
+body.holiday-theme-active .pixel-tree-right {
+  right: clamp(14px,3vw,45px);
+  bottom: 12px;
+  opacity: .65;
+  transform: scale(.75);
+  transform-origin: bottom;
+}
+
+/* --- Holiday greeting text: pixel block style --- */
+body.holiday-theme-active .holiday-greeting {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #cb3c45;
+  font: 900 12px/1.4 "Courier New", monospace;
+  letter-spacing: .25em;
+  text-shadow: 2px 2px 0 rgba(0,0,0,.12), -1px -1px 0 rgba(255,255,255,.8);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+body.holiday-theme-active .holiday-greeting span { color: #f4c95d; text-shadow: 2px 2px 0 rgba(0,0,0,.15); }
+
+/* --- Decorative pixel trees in content corners --- */
+body.holiday-theme-active #content::before,
+body.holiday-theme-active #content::after {
+  content: "";
+  position: fixed;
+  bottom: 6px;
+  z-index: 10021;
+  width: 48px;
+  height: 64px;
+  pointer-events: none;
+  opacity: .75;
+  /* Pixel art Christmas tree built from gradient layers */
+  background:
+    /* Star on top */
+    radial-gradient(circle, #f4c95d 0 2.5px, transparent 3px) 20px 2px / 8px 8px no-repeat,
+    /* Baubles */
+    radial-gradient(circle, #cb3c45 0 2px, transparent 2.5px) 14px 22px / 8px 8px no-repeat,
+    radial-gradient(circle, #f4c95d 0 2px, transparent 2.5px) 28px 34px / 8px 8px no-repeat,
+    radial-gradient(circle, #cb3c45 0 2px, transparent 2.5px) 16px 42px / 8px 8px no-repeat,
+    /* Trunk */
+    linear-gradient(#8B6914, #6B4F12) 20px bottom / 8px 10px no-repeat,
+    /* Tree body */
+    #268259;
+  clip-path: polygon(
+    50% 0%, 58% 0%,
+    58% 10%, 72% 10%, 72% 22%, 86% 22%, 86% 36%, 100% 36%, 100% 54%,
+    84% 54%, 84% 68%, 70% 68%, 70% 82%, 62% 82%, 62% 100%,
+    38% 100%, 38% 82%, 30% 82%, 30% 68%, 16% 68%, 16% 54%,
+    0% 54%, 0% 36%, 14% 36%, 14% 22%, 28% 22%, 28% 10%, 42% 10%, 42% 0%
+  );
+  filter: drop-shadow(2px 2px 0 rgba(0,0,0,.12));
+  image-rendering: pixelated;
+}
+body.holiday-theme-active #content::before {
+  left: clamp(88px,6.5vw,104px);
+  transform: scale(.72);
+  transform-origin: bottom left;
+}
+body.holiday-theme-active #content::after { right: 18px; }
+
+/* --- Content area subtle treatment --- */
+body.holiday-theme-active #content {
+  background: radial-gradient(ellipse at 50% 0, rgba(180,210,230,.12), transparent 55%);
+}
+
+/* --- Overlay views: winter tones --- */
+body.holiday-theme-active #cozyNoVideo {
+  background: radial-gradient(ellipse at 50% 70%, rgba(32,115,78,.15), transparent 60%),
+    linear-gradient(180deg, #d4e8f0, #e8f0f4);
+}
+body.holiday-theme-active #iptvSelector {
+  background: radial-gradient(ellipse at 75% 10%, rgba(32,115,78,.08), transparent 55%),
+    linear-gradient(180deg, #d4e8f0, #e8f0f4);
+}
+
+/* --- Form elements / panels --- */
+body.holiday-theme-active .empty-symbol,
+body.holiday-theme-active .tv-form,
+body.holiday-theme-active #spotifyLoginBox,
+body.holiday-theme-active #listBox {
+  border-radius: var(--pixel-radius);
+  border: 2px solid rgba(32,115,78,.2);
+  background-color: rgba(255,255,255,.85);
+  box-shadow: 3px 3px 0 rgba(0,0,0,.08);
+}
+body.holiday-theme-active .empty-symbol { color: #cb3c45; }
+
+body.holiday-theme-active .overlay-btn,
+body.holiday-theme-active .web-tool,
+body.holiday-theme-active #iptvBackBtn,
+body.holiday-theme-active .tv-form select,
+body.holiday-theme-active .tv-form input {
+  border-radius: var(--pixel-radius);
+  border: 2px solid rgba(32,115,78,.2);
+  color: #1a2e28;
+  background: rgba(255,255,255,.8);
+  box-shadow: 2px 2px 0 rgba(0,0,0,.06);
+}
+body.holiday-theme-active .tv-form label { color: #1a2e28; }
+body.holiday-theme-active .tv-selection h1 { color: #20734e !important; }
+body.holiday-theme-active .tv-selection .eyebrow { color: #cb3c45; }
+body.holiday-theme-active .tv-selection > p { color: #4a6e62; }
+
+body.holiday-theme-active .playlist-row {
+  border-radius: var(--pixel-radius);
+  background: rgba(255,255,255,.65);
+  border: 2px solid transparent;
+}
+body.holiday-theme-active .playlist-row:hover {
+  border-color: rgba(32,115,78,.3);
+  background: rgba(255,255,255,.85);
+  box-shadow: 2px 2px 0 rgba(0,0,0,.06);
+}
+body.holiday-theme-active .playlist-row .name { color: #1a2e28; }
+
+/* --- Spotify progress bar --- */
+body.holiday-theme-active #progressBar {
+  background: rgba(255,255,255,.88);
+  border-color: rgba(32,115,78,.15);
+}
+body.holiday-theme-active #progressTrack { background: #c5d8ce; }
+body.holiday-theme-active #progressFill,
+body.holiday-theme-active #autoNpProgressFill { background: #cb3c45; }
+body.holiday-theme-active #playIcon {
+  border-radius: var(--pixel-radius);
+  background: #20734e;
+  color: #f4c95d;
+  box-shadow: 2px 2px 0 rgba(0,0,0,.12);
+}
+body.holiday-theme-active #timeCur,
+body.holiday-theme-active #timeDur { color: #4a6e62; }
+
+/* --- Album art squared --- */
+body.holiday-theme-active #npArt,
+body.holiday-theme-active #autoNpArt {
+  border-radius: var(--pixel-radius);
+  box-shadow: 4px 4px 0 rgba(0,0,0,.12);
+}
+body.holiday-theme-active #npTitle { color: #1a2e28; }
+body.holiday-theme-active #npArtist { color: #4a6e62; }
+
+/* --- Spotify auto now playing overlay: snowy treatment --- */
+body.holiday-theme-active #spotifyAutoNowPlaying {
+  background: linear-gradient(180deg, #d4e8f0, #e8f0f4);
+}
+body.holiday-theme-active #spotifyAutoNowPlaying::after {
+  background: linear-gradient(120deg, rgba(232,240,244,.3), rgba(232,240,244,.75));
+}
+body.holiday-theme-active #autoNpTitle { color: #1a2e28 !important; }
+body.holiday-theme-active #autoNpArtist { color: #4a6e62 !important; }
+body.holiday-theme-active #autoNpDevice { color: #6b9a84 !important; }
+body.holiday-theme-active #autoNpHint { color: #6b9a84; }
+
+/* --- Spotify login box --- */
+body.holiday-theme-active #spotifyLoginBox { background: rgba(255,255,255,.9); }
+body.holiday-theme-active #spotifyLoginBox .empty-symbol { background: #20734e; color: #f4c95d; }
+body.holiday-theme-active #spotifyLoginBox h1 { color: #20734e !important; }
+body.holiday-theme-active #spotifyLoginBox p { color: #4a6e62; }
+body.holiday-theme-active #spotifyLoginBox .supporting { color: #6b9a84; }
+
+/* --- Library heading --- */
+body.holiday-theme-active .library-heading { color: #cb3c45 !important; }
+
+/* --- Alarm view: pixel winter --- */
+body.holiday-theme-active #view-alarm {
+  background: radial-gradient(ellipse at 50% 100%, rgba(244,201,93,.1), transparent 65%),
+    linear-gradient(180deg, #d4e8f0, #e8f0f4);
+}
+body.holiday-theme-active #alarmTime { color: #20734e !important; }
+body.holiday-theme-active #alarmMotif { color: #cb3c45 !important; }
+body.holiday-theme-active #alarmStopBtn {
+  background: #cb3c45;
+  color: #fff;
+  border: 2px solid #a82d35;
+  box-shadow: 3px 3px 0 rgba(0,0,0,.15);
+}
+body.holiday-theme-active .alarm-content > .icon { color: #f4c95d; }
+
+/* --- Web player toolbar --- */
+body.holiday-theme-active #webPlayerToolbar {
+  background: rgba(255,255,255,.9);
+  border-color: rgba(32,115,78,.15);
+}
+body.holiday-theme-active #webPlayerTitle { color: #1a2e28; }
+body.holiday-theme-active #webPlayerStatus { color: #6b9a84; }
+body.holiday-theme-active .web-tool { background: rgba(255,255,255,.8); border-color: rgba(32,115,78,.2); }
+
+/* --- Overlay buttons on video views need visibility --- */
+body.holiday-theme-active .overlay-btn {
+  background: rgba(255,255,255,.92);
+  color: #1a2e28;
+  border: 2px solid rgba(32,115,78,.25);
+  box-shadow: 3px 3px 0 rgba(0,0,0,.1);
+}
+
+/* --- Eyebrow accents on special sections --- */
+body.holiday-theme-active #view-cozy .eyebrow,
+body.holiday-theme-active #view-iptv .eyebrow,
+body.holiday-theme-active #view-spotify .eyebrow { color: #cb3c45; }
+body.holiday-theme-active .empty-panel h1 { color: #20734e !important; }
+body.holiday-theme-active .empty-panel p { color: #4a6e62; }
+body.holiday-theme-active .empty-panel .supporting { color: #6b9a84; }
+
+/* --- Track rows --- */
+body.holiday-theme-active .track-row { border-color: rgba(32,115,78,.1); color: #1a2e28; }
+body.holiday-theme-active .track-row .dur { color: #6b9a84; }
+
+/* ═══ MOBILE ADJUSTMENTS ═══ */
+@media (max-width:760px) {
+  body.holiday-theme-active .pixel-tree-left { bottom: 88px; left: 5px; width: 44px; }
+  body.holiday-theme-active .pixel-tree-right { bottom: 88px; right: 5px; width: 44px; }
+  body.holiday-theme-active .holiday-greeting { bottom: 91px; font-size: 9px; }
+  body.holiday-theme-active #content::before { left: 3px; bottom: 78px; }
+  body.holiday-theme-active #content::after { right: 3px; bottom: 78px; }
+  body.holiday-theme-active #sidebar {
+    background: rgba(255,255,255,.95);
+    border-color: rgba(32,115,78,.12);
+  }
+}
+@media (prefers-reduced-motion:reduce) {
+  body.holiday-theme-active .holiday-snow::before,
+  body.holiday-theme-active .holiday-snow::after { animation: none; }
 }
