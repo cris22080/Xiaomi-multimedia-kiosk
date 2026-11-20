@@ -9591,7 +9591,7 @@ const unsigned char* epd_bitmap1_allArray[80] = {
 	epd_bitmap1_frame_09_delay_0,
 	epd_bitmap1_frame_10_delay_0,
 	epd_bitmap1_frame_11_delay_0,
-	epd_bitmap1_frame_12_delay_0,
+	epd_bitmap1_frame_12_delay_0,\
 	epd_bitmap1_frame_13_delay_0,
 	epd_bitmap1_frame_14_delay_0,
 	epd_bitmap1_frame_15_delay_0,

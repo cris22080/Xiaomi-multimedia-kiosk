@@ -492,7 +492,7 @@ body.holiday-theme-active .holiday-scene {
   overflow: hidden;
   pointer-events: none;
   /* Snow-covered ground at the bottom */
-  background: linear-gradient(180deg, transparent 80%, rgba(255,255,255,.65) 90%, rgba(255,255,255,.9) 100%);
+  background: linear-gradient(180deg, transparent 60%, #a0d8ff 80%, #e8f0f4 100%);
 }
 /* Pixelated snow ground line */
 body.holiday-theme-active .holiday-scene::after {
@@ -505,6 +505,42 @@ body.holiday-theme-active .holiday-scene::after {
 }
 
 /* --- Pixel trees --- */
+
+/* Transparent tree behind Arduino buttons */
+.pixel-tree-arduino {
+  position: absolute;
+  inset: 0;
+  opacity: 0.3; /* semi‑transparent */
+  pointer-events: none;
+  z-index: -1;
+}
+#homeRight { position: relative; }
+
+/* Extra small tree and sled on snow ground */
+.pixel-tree-sled {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: clamp(40px,5vw,70px);
+  height: auto;
+  image-rendering: pixelated;
+}
+.sled {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: clamp(30px,4vw,50px);
+  height: auto;
+  image-rendering: pixelated;
+}
+
+@media (max-width:760px) {
+  .pixel-tree-arduino { opacity: 0.2; }
+  .pixel-tree-sled { bottom: 8px; width: 30px; }
+  .sled { bottom: 4px; width: 25px; }
+}
 body.holiday-theme-active .pixel-tree {
   position: absolute;
   width: clamp(50px,6vw,90px);
