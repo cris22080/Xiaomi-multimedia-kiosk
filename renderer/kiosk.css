@@ -818,3 +818,150 @@ body.holiday-theme-active .track-row .dur { color: #6b9a84; }
   body.holiday-theme-active .holiday-snow::before,
   body.holiday-theme-active .holiday-snow::after { animation: none; }
 }
+
+/* A soft dusk arrives at 16:00 while the daytime layout stays easy to read. */
+body.holiday-theme-active.holiday-evening-active {
+  --line: rgba(89,91,145,.22);
+  --muted: #59637f;
+  --panel-border: rgba(89,91,145,.22);
+}
+body.holiday-theme-active.holiday-evening-active #app {
+  background-color: #969fbe;
+  background-image:
+    radial-gradient(ellipse at 54% 84%,rgba(255,184,126,.3),transparent 24%),
+    linear-gradient(rgba(88,93,151,.28),rgba(226,173,151,.18)),
+    url("pixel-christmas-scene.svg");
+}
+body.holiday-theme-active.holiday-evening-active #sidebar { background: rgba(249,247,252,.92); }
+body.holiday-theme-active.holiday-evening-active #homeRight,
+body.holiday-theme-active.holiday-evening-active .stat-card,
+body.holiday-theme-active.holiday-evening-active .status-pill {
+  border-color: rgba(89,91,145,.24);
+  box-shadow: 3px 3px 0 rgba(59,56,95,.1);
+}
+body.holiday-theme-active.holiday-evening-active .holiday-snow { opacity: .78; }
+
+/* The seasonal night version keeps the same pixel scene and changes its light. */
+body.holiday-theme-active.holiday-night-active {
+  color-scheme: dark;
+  --bg: #111a31;
+  --surface: #1a2742;
+  --surface-raised: #243454;
+  --surface-deep: #10182c;
+  --line: rgba(196,213,255,.24);
+  --text: #eef3ff;
+  --muted: #c4cfe7;
+  --panel: rgba(20,32,56,.9);
+  --panel-border: rgba(196,213,255,.24);
+}
+body.holiday-theme-active.holiday-night-active #app {
+  background-color: #111a31;
+  background-image:
+    radial-gradient(ellipse at 25% 69%,rgba(255,203,105,.2),transparent 17%),
+    linear-gradient(rgba(23,30,65,.63),rgba(15,31,55,.56)),
+    url("pixel-christmas-scene.svg");
+}
+body.holiday-theme-active.holiday-night-active #sidebar {
+  background: rgba(15,25,47,.94);
+  border-color: rgba(196,213,255,.22);
+}
+body.holiday-theme-active.holiday-night-active .brand-mark { background: #263852; color: #f4c95d; }
+body.holiday-theme-active.holiday-night-active .brand-name,
+body.holiday-theme-active.holiday-night-active .nav-btn { color: #d5def2; }
+body.holiday-theme-active.holiday-night-active .nav-btn.active {
+  background: #274c45;
+  color: #fff;
+  border-color: #4c786b;
+}
+body.holiday-theme-active.holiday-night-active #netPill {
+  background: rgba(16,27,49,.88);
+  color: #eef3ff;
+  border-color: rgba(196,213,255,.25);
+}
+body.holiday-theme-active.holiday-night-active #netPill::before { background: #8fe0b0; }
+body.holiday-theme-active.holiday-night-active #content {
+  background: radial-gradient(ellipse at 50% 0,rgba(185,198,255,.08),transparent 60%);
+}
+body.holiday-theme-active.holiday-night-active #homeRight,
+body.holiday-theme-active.holiday-night-active .stat-card,
+body.holiday-theme-active.holiday-night-active .status-pill {
+  background: rgba(17,29,52,.86);
+  border-color: rgba(196,213,255,.25);
+  box-shadow: 3px 3px 0 rgba(0,0,0,.14);
+}
+body.holiday-theme-active.holiday-night-active .room-heading h1,
+body.holiday-theme-active.holiday-night-active .stat-card .value,
+body.holiday-theme-active.holiday-night-active .status-pill .name { color: #f2f5ff; }
+body.holiday-theme-active.holiday-night-active .room-heading .room-number,
+body.holiday-theme-active.holiday-night-active .stat-card .icon { color: #f4c95d; }
+body.holiday-theme-active.holiday-night-active .stat-card:last-child .icon { color: #9fe2be; }
+body.holiday-theme-active.holiday-night-active .status-pill .state,
+body.holiday-theme-active.holiday-night-active .room-footer,
+body.holiday-theme-active.holiday-night-active #dateLine { color: #d2dcf1 !important; }
+body.holiday-theme-active.holiday-night-active .status-pill.on {
+  background: rgba(39,76,69,.65);
+  border-color: rgba(143,224,176,.42);
+}
+body.holiday-theme-active.holiday-night-active #clock {
+  color: #f4f6ff !important;
+  filter: drop-shadow(4px 4px 0 rgba(119,147,220,.32));
+}
+body.holiday-theme-active.holiday-night-active .holiday-snow { opacity: .9; }
+body.holiday-theme-active.holiday-night-active #cozyNoVideo,
+body.holiday-theme-active.holiday-night-active #iptvSelector,
+body.holiday-theme-active.holiday-night-active #view-alarm {
+  background: linear-gradient(180deg,rgba(18,27,60,.78),rgba(12,34,53,.86));
+}
+body.holiday-theme-active.holiday-night-active .empty-symbol,
+body.holiday-theme-active.holiday-night-active .tv-form,
+body.holiday-theme-active.holiday-night-active #spotifyLoginBox,
+body.holiday-theme-active.holiday-night-active #listBox {
+  background: rgba(19,32,56,.94);
+  border-color: rgba(196,213,255,.28);
+  color: #f2f5ff;
+}
+body.holiday-theme-active.holiday-night-active .empty-panel h1,
+body.holiday-theme-active.holiday-night-active .tv-selection h1,
+body.holiday-theme-active.holiday-night-active #spotifyLoginBox h1,
+body.holiday-theme-active.holiday-night-active #npTitle,
+body.holiday-theme-active.holiday-night-active .track-row { color: #f2f5ff !important; }
+body.holiday-theme-active.holiday-night-active .empty-panel p,
+body.holiday-theme-active.holiday-night-active #spotifyLoginBox p,
+body.holiday-theme-active.holiday-night-active .tv-selection > p,
+body.holiday-theme-active.holiday-night-active .tv-form label,
+body.holiday-theme-active.holiday-night-active #npArtist { color: #c4cfe7; }
+body.holiday-theme-active.holiday-night-active .tv-form select,
+body.holiday-theme-active.holiday-night-active .tv-form input,
+body.holiday-theme-active.holiday-night-active .overlay-btn,
+body.holiday-theme-active.holiday-night-active .web-tool,
+body.holiday-theme-active.holiday-night-active #iptvBackBtn {
+  background: #111d36;
+  border-color: rgba(196,213,255,.3);
+  color: #eef3ff;
+}
+body.holiday-theme-active.holiday-night-active .playlist-row {
+  background: rgba(28,44,70,.82);
+  color: #f2f5ff;
+}
+body.holiday-theme-active.holiday-night-active .playlist-row .name,
+body.holiday-theme-active.holiday-night-active .track-row { color: #f2f5ff; }
+body.holiday-theme-active.holiday-night-active #progressBar { background: #101a31; border-color: rgba(196,213,255,.23); }
+body.holiday-theme-active.holiday-night-active #progressTrack { background: #344563; }
+body.holiday-theme-active.holiday-night-active #progressFill,
+body.holiday-theme-active.holiday-night-active #autoNpProgressFill { background: #e4555c; }
+body.holiday-theme-active.holiday-night-active #playIcon { background: #274c45; color: #f4c95d; }
+body.holiday-theme-active.holiday-night-active #spotifyAutoNowPlaying {
+  background: linear-gradient(180deg,#111a31,#152743);
+}
+body.holiday-theme-active.holiday-night-active #spotifyAutoNowPlaying::after {
+  background: linear-gradient(120deg,rgba(15,23,51,.6),rgba(9,22,42,.84));
+}
+body.holiday-theme-active.holiday-night-active #autoNpTitle { color: #f2f5ff !important; }
+body.holiday-theme-active.holiday-night-active #autoNpArtist,
+body.holiday-theme-active.holiday-night-active #autoNpDevice,
+body.holiday-theme-active.holiday-night-active #autoNpHint { color: #d2dcf1 !important; }
+body.holiday-theme-active.holiday-night-active #webPlayerToolbar { background: #111d36; }
+body.holiday-theme-active.holiday-night-active #webPlayerTitle,
+body.holiday-theme-active.holiday-night-active #webPlayerStatus { color: #eef3ff; }
+body.holiday-theme-active.holiday-night-active #alarmTime { color: #eef3ff !important; }
+body.holiday-theme-active.holiday-night-active #alarmMotif { color: #f4c95d !important; }

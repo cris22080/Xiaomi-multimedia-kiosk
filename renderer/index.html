@@ -74,7 +74,13 @@
       const today = new Date();
       const monthDay = (today.getMonth() + 1) * 100 + today.getDate();
       const active = monthDay >= 1115 || monthDay <= 110;
+      const hour = today.getHours();
+      const minute = today.getMinutes();
+      const evening = hour >= 16 && hour < 22;
+      const night = hour >= 22 || hour < 9 || (hour === 9 && minute < 30);
       document.body.classList.toggle("holiday-theme-active", active);
+      document.body.classList.toggle("holiday-evening-active", active && evening);
+      document.body.classList.toggle("holiday-night-active", active && night);
       document.querySelectorAll("[data-holiday-copy]").forEach((element) => {
         if (!element.dataset.normalCopy) element.dataset.normalCopy = element.innerHTML;
         element.innerHTML = active ? element.dataset.holidayCopy : element.dataset.normalCopy;
