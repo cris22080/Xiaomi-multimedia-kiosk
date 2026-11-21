@@ -301,13 +301,11 @@ body.holiday-theme-active * {
 body.holiday-theme-active #app {
   position: relative;
   isolation: isolate;
-  background:
-    /* Faint snow hills at the bottom */
-    radial-gradient(ellipse at 20% 100%, rgba(255,255,255,.95) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 100%, rgba(255,255,255,.90) 0%, transparent 45%),
-    radial-gradient(ellipse at 50% 100%, rgba(255,255,255,.88) 0%, transparent 60%),
-    /* Soft winter sky gradient */
-    linear-gradient(180deg, #d4e8f0 0%, #e8f0f4 40%, #f0f5f8 70%, #ffffff 100%);
+  background-color: #b9c1dc;
+  background-image: url("pixel-christmas-scene.svg");
+  background-position: center;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
   font-family: var(--font);
 }
 
@@ -371,10 +369,30 @@ body.holiday-theme-active #netPill::before { background: #20734e; box-shadow: 0 
 /* --- Home view --- */
 body.holiday-theme-active #view-home { position: relative; isolation: isolate; }
 body.holiday-theme-active #view-home > :not(.holiday-scene) { position: relative; z-index: 1; }
+body.holiday-theme-active #homeLeft { align-items: center; text-align: center; }
 
 body.holiday-theme-active #clock {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
   color: #20734e !important;
+  font-family: "Consolas", "Lucida Console", "Courier New", monospace;
+  font-size: clamp(110px,11vw,230px);
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.035em;
   text-shadow: 4px 4px 0 rgba(32,115,78,.15);
+}
+body.holiday-theme-active .pixel-clock-art {
+  display: block;
+  width: min(100%, 900px);
+  height: auto;
+  overflow: visible;
+  fill: currentColor;
+  image-rendering: pixelated;
+  shape-rendering: crispEdges;
+  filter: drop-shadow(4px 4px 0 rgba(32,115,78,.16));
 }
 body.holiday-theme-active #dateLine {
   color: #cb3c45 !important;
@@ -450,7 +468,8 @@ body.holiday-theme-active .primary-btn:active { transform: translate(2px,2px); b
 body.holiday-theme-active .holiday-snow {
   display: block;
   position: fixed;
-  inset: 0;
+  inset: 0 0 auto;
+  height: 56vh;
   z-index: 10022;
   pointer-events: none;
   overflow: hidden;
@@ -491,17 +510,17 @@ body.holiday-theme-active .holiday-scene {
   inset: 0;
   overflow: hidden;
   pointer-events: none;
-  /* Snow-covered ground at the bottom */
-  background: linear-gradient(180deg, transparent 60%, #a0d8ff 80%, #e8f0f4 100%);
+  background: transparent;
 }
-/* Pixelated snow ground line */
+/* The single pixel-art backdrop carries the trees, cabin, snowfield and sled. */
+body.holiday-theme-active .holiday-scene > svg,
+body.holiday-theme-active .holiday-scene > .holiday-greeting,
+body.holiday-theme-active .pixel-tree-arduino,
+body.holiday-theme-active #content::before,
+body.holiday-theme-active #content::after { display: none; }
+/* A deep, stepped pixel snowbank along the foot of the scene. */
 body.holiday-theme-active .holiday-scene::after {
-  content: "";
-  position: absolute;
-  left: 0; right: 0; bottom: 0;
-  height: 8px;
-  background: repeating-linear-gradient(90deg, #fff 0 6px, #e8f0f4 6px 8px);
-  image-rendering: pixelated;
+  display: none;
 }
 
 /* --- Pixel trees --- */
@@ -543,6 +562,7 @@ body.holiday-theme-active .holiday-scene::after {
 }
 body.holiday-theme-active .pixel-tree {
   position: absolute;
+  z-index: 1;
   width: clamp(50px,6vw,90px);
   height: auto;
   image-rendering: pixelated;
@@ -560,10 +580,25 @@ body.holiday-theme-active .pixel-tree-right {
   transform: scale(.75);
   transform-origin: bottom;
 }
+body.holiday-theme-active .pixel-house {
+  position: absolute;
+  z-index: 1;
+  left: 43%;
+  bottom: clamp(18px,3vh,30px);
+  width: clamp(76px,8vw,124px);
+  height: auto;
+  image-rendering: pixelated;
+  filter: drop-shadow(3px 3px 0 rgba(0,0,0,.12));
+}
+body.holiday-theme-active .pixel-tree-sled,
+body.holiday-theme-active .sled { z-index: 2; }
+body.holiday-theme-active .pixel-tree-sled { left: 56%; }
+body.holiday-theme-active .sled { left: 65%; }
 
 /* --- Holiday greeting text: pixel block style --- */
 body.holiday-theme-active .holiday-greeting {
   position: absolute;
+  z-index: 3;
   bottom: 18px;
   left: 50%;
   transform: translateX(-50%);
@@ -767,6 +802,10 @@ body.holiday-theme-active .track-row .dur { color: #6b9a84; }
 @media (max-width:760px) {
   body.holiday-theme-active .pixel-tree-left { bottom: 88px; left: 5px; width: 44px; }
   body.holiday-theme-active .pixel-tree-right { bottom: 88px; right: 5px; width: 44px; }
+  body.holiday-theme-active .pixel-house { left: 41%; bottom: 92px; width: 58px; }
+  body.holiday-theme-active .pixel-tree-sled { left: 57%; bottom: 84px; width: 26px; }
+  body.holiday-theme-active .sled { left: 65%; bottom: 82px; width: 38px; }
+  body.holiday-theme-active .pixel-clock-art { width: min(100%,520px); }
   body.holiday-theme-active .holiday-greeting { bottom: 91px; font-size: 9px; }
   body.holiday-theme-active #content::before { left: 3px; bottom: 78px; }
   body.holiday-theme-active #content::after { right: 3px; bottom: 78px; }

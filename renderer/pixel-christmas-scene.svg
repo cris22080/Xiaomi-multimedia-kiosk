@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 144" preserveAspectRatio="none" shape-rendering="crispEdges">
+  <defs>
+    <g id="fir">
+      <rect x="12" y="0" width="4" height="4" fill="#f2c858"/>
+      <rect x="10" y="4" width="8" height="4" fill="#397d69"/>
+      <rect x="8" y="8" width="12" height="4" fill="#28765d"/>
+      <rect x="6" y="12" width="16" height="4" fill="#37876b"/>
+      <rect x="4" y="16" width="20" height="4" fill="#247256"/>
+      <rect x="2" y="20" width="24" height="4" fill="#348369"/>
+      <rect x="0" y="24" width="28" height="4" fill="#216d53"/>
+      <rect x="0" y="24" width="8" height="2" fill="#f5f4e9"/>
+      <rect x="18" y="20" width="8" height="2" fill="#f5f4e9"/>
+      <rect x="8" y="16" width="9" height="2" fill="#f5f4e9"/>
+      <rect x="14" y="12" width="7" height="2" fill="#f5f4e9"/>
+      <rect x="9" y="8" width="8" height="2" fill="#f5f4e9"/>
+      <rect x="8" y="28" width="12" height="7" fill="#745338"/>
+      <rect x="7" y="31" width="14" height="2" fill="#8d6842"/>
+      <rect x="4" y="34" width="20" height="2" fill="#fff"/>
+      <rect x="2" y="36" width="24" height="2" fill="#b8dcd9"/>
+      <rect x="5" y="18" width="3" height="3" fill="#cf4850"/>
+      <rect x="19" y="13" width="3" height="3" fill="#f0c85b"/>
+      <rect x="12" y="24" width="3" height="3" fill="#cf4850"/>
+    </g>
+    <g id="small-fir">
+      <rect x="8" y="0" width="4" height="4" fill="#f2c858"/>
+      <rect x="6" y="4" width="8" height="4" fill="#438c75"/>
+      <rect x="4" y="8" width="12" height="4" fill="#28765d"/>
+      <rect x="2" y="12" width="16" height="4" fill="#37876b"/>
+      <rect x="0" y="16" width="20" height="4" fill="#216d53"/>
+      <rect x="0" y="16" width="6" height="2" fill="#f5f4e9"/>
+      <rect x="12" y="12" width="6" height="2" fill="#f5f4e9"/>
+      <rect x="7" y="8" width="7" height="2" fill="#f5f4e9"/>
+      <rect x="7" y="20" width="6" height="6" fill="#745338"/>
+      <rect x="2" y="26" width="16" height="2" fill="#fff"/>
+    </g>
+  </defs>
+
+  <!-- Lavender winter sky with blocky clouds and crisp snow pixels. -->
+  <rect width="320" height="144" fill="#b9c1dc"/>
+  <rect y="0" width="320" height="47" fill="#b5bdd9"/>
+  <rect x="0" y="18" width="44" height="8" fill="#cbd2e6"/>
+  <rect x="12" y="14" width="28" height="6" fill="#d9deed"/>
+  <rect x="20" y="10" width="16" height="5" fill="#e5e8f1"/>
+  <rect x="46" y="20" width="10" height="5" fill="#cbd2e6"/>
+  <rect x="204" y="31" width="52" height="7" fill="#cbd2e6"/>
+  <rect x="216" y="26" width="28" height="6" fill="#d9deed"/>
+  <rect x="226" y="22" width="13" height="5" fill="#e5e8f1"/>
+  <rect x="262" y="34" width="14" height="4" fill="#cbd2e6"/>
+  <g fill="#f8f8f4">
+    <rect x="10" y="10" width="2" height="8"/><rect x="7" y="13" width="8" height="2"/>
+    <rect x="75" y="25" width="2" height="6"/><rect x="73" y="27" width="6" height="2"/>
+    <rect x="142" y="12" width="2" height="8"/><rect x="139" y="15" width="8" height="2"/>
+    <rect x="189" y="46" width="2" height="8"/><rect x="186" y="49" width="8" height="2"/>
+    <rect x="282" y="12" width="2" height="8"/><rect x="279" y="15" width="8" height="2"/>
+    <rect x="306" y="43" width="2" height="6"/><rect x="304" y="45" width="6" height="2"/>
+  </g>
+
+  <!-- Distant snowy ridge and fir forest. -->
+  <path d="M0 74h12v-6h8v-5h8v7h8v-4h8v-7h8v6h8v-5h8v9h9v-5h8v-6h8v7h8v-3h8v9h10v-5h8v-7h8v7h10v-4h8v8h9v-5h8v-8h8v9h8v-4h8v7h8v-5h8v-8h8v8h8v-3h8v8h8v-6h8v5h7v18H0z" fill="#8eabc1"/>
+  <path d="M0 82h18v-5h10v7h12v-4h10v-7h8v8h12v-5h11v6h10v-4h10v8h10v-5h12v5h10v-7h8v6h10v-5h12v7h10v-4h10v6h12v-7h9v7h12v-4h10v5h13v-5h8v8h8v-4h9v18H0z" fill="#dce8e8"/>
+
+  <!-- Cabin with snowy red roof, chimney, warm windows and dark doorway. -->
+  <g>
+    <rect x="89" y="59" width="7" height="19" fill="#8b4946"/>
+    <rect x="87" y="56" width="11" height="4" fill="#e8f0ed"/>
+    <path d="M36 80h8v-5h8v-5h8v-5h8v-5h8v-5h8v-5h8v5h8v5h8v5h8v5h8v5h8v5h8v9H36z" fill="#873d49"/>
+    <path d="M39 79h8v-5h8v-5h8v-5h8v-5h8v-5h8v5h8v5h8v5h8v5h8v5h8v5H39z" fill="#b94d54"/>
+    <path d="M34 82h8v-5h8v-5h8v-5h8v-5h8v-5h8v-5h8v5h8v5h8v5h8v5h8v5h8v5h8v4H34z" fill="#f4f4eb"/>
+    <rect x="43" y="84" width="62" height="34" fill="#b8564f"/>
+    <rect x="43" y="84" width="62" height="4" fill="#7d3d42"/>
+    <rect x="47" y="91" width="54" height="3" fill="#d97660"/>
+    <rect x="47" y="101" width="54" height="3" fill="#d97660"/>
+    <rect x="47" y="111" width="54" height="3" fill="#d97660"/>
+    <rect x="50" y="91" width="13" height="13" fill="#533c4c"/><rect x="52" y="93" width="9" height="9" fill="#ffd86e"/>
+    <rect x="54" y="93" width="3" height="9" fill="#fff1a7"/><rect x="52" y="96" width="9" height="3" fill="#fff1a7"/>
+    <rect x="84" y="91" width="13" height="13" fill="#533c4c"/><rect x="86" y="93" width="9" height="9" fill="#ffd86e"/>
+    <rect x="88" y="93" width="3" height="9" fill="#fff1a7"/><rect x="86" y="96" width="9" height="3" fill="#fff1a7"/>
+    <rect x="67" y="98" width="14" height="20" fill="#573c42"/><rect x="70" y="101" width="8" height="17" fill="#8f5948"/>
+    <rect x="75" y="109" width="2" height="2" fill="#ffd86e"/>
+    <rect x="71" y="77" width="9" height="4" fill="#f4c95d"/><rect x="74" y="74" width="3" height="9" fill="#c74750"/>
+    <rect x="38" y="117" width="70" height="4" fill="#f4f7f3"/>
+  </g>
+
+  <!-- Snowy trees in front and behind the village. -->
+  <use href="#fir" x="12" y="80"/>
+  <use href="#small-fir" x="131" y="84"/>
+  <use href="#fir" x="158" y="75"/>
+  <use href="#small-fir" x="193" y="82"/>
+  <use href="#fir" x="285" y="75"/>
+
+  <!-- Pixel snowman and a little red sleigh with parcels. -->
+  <g>
+    <rect x="239" y="103" width="22" height="7" fill="#f4f7f3"/>
+    <rect x="235" y="110" width="30" height="8" fill="#f4f7f3"/>
+    <rect x="241" y="118" width="18" height="7" fill="#f4f7f3"/>
+    <rect x="243" y="106" width="14" height="4" fill="#f4f7f3"/>
+    <rect x="243" y="104" width="14" height="3" fill="#343d55"/><rect x="246" y="100" width="8" height="5" fill="#343d55"/>
+    <rect x="246" y="109" width="2" height="2" fill="#27354a"/><rect x="254" y="109" width="2" height="2" fill="#27354a"/>
+    <rect x="249" y="112" width="4" height="2" fill="#d99545"/><rect x="250" y="117" width="2" height="2" fill="#768994"/>
+    <rect x="239" y="111" width="5" height="2" fill="#b7444a"/><rect x="244" y="113" width="10" height="3" fill="#b7444a"/><rect x="254" y="111" width="5" height="2" fill="#b7444a"/>
+    <rect x="232" y="113" width="4" height="2" fill="#8b6244"/><rect x="264" y="113" width="4" height="2" fill="#8b6244"/>
+  </g>
+  <g>
+    <rect x="145" y="126" width="24" height="3" fill="#a6323d"/><rect x="150" y="122" width="17" height="5" fill="#cf444d"/>
+    <rect x="146" y="129" width="23" height="2" fill="#744c4a"/><rect x="150" y="131" width="17" height="2" fill="#744c4a"/>
+    <rect x="151" y="118" width="6" height="4" fill="#28765d"/><rect x="158" y="116" width="7" height="6" fill="#f2c858"/>
+  </g>
+
+  <!-- Foreground snowfield with a stepped, icy horizon. -->
+  <path d="M0 121h22v-3h17v3h18v-2h22v3h18v-4h20v4h18v-2h20v3h18v-3h22v2h20v-4h18v3h21v-2h20v3h18v-3h18v29H0z" fill="#e8f3ee"/>
+  <path d="M0 130h31v-2h20v3h28v-2h28v3h25v-2h32v3h29v-2h24v3h33v-2h24v3h26v-2h20v15H0z" fill="#d2e8e5"/>
+  <rect x="0" y="141" width="320" height="3" fill="#f9faf5"/>
+</svg>
